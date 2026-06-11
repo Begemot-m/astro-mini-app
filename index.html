@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="color-scheme" content="light">
+  <title>Астро — персональная карта</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <main class="phone-shell">
+    <div class="app">
+      <header class="topbar">
+        <button class="brand" data-go="today" aria-label="На главную">астро<span>.</span></button>
+        <div class="top-actions">
+          <button class="icon-button" data-action="notifications" aria-label="Уведомления"><i data-lucide="bell"></i><b></b></button>
+          <button class="avatar" data-go="profile" aria-label="Открыть профиль">МК</button>
+        </div>
+      </header>
+
+      <section class="screen active" id="today">
+        <div class="eyebrow-row">
+          <p class="eyebrow">Четверг, 11 июня</p>
+          <button class="streak" data-action="streak"><i data-lucide="flame"></i> 7 дней</button>
+        </div>
+        <h1>День ясных<br>решений</h1>
+        <p class="lead">Сегодня легче услышать себя, если ненадолго выключить внешний шум.</p>
+
+        <button class="energy-card" data-detail="energy">
+          <div class="moon-orbit"><span class="moon"></span><span class="orbit-dot"></span></div>
+          <div>
+            <p class="eyebrow">Энергия дня · 82%</p>
+            <h2>Спокойная сила</h2>
+            <p>Луна в Деве помогает увидеть детали и закончить то, что давно просило внимания.</p>
+            <span class="card-link">Подробнее <i data-lucide="arrow-up-right"></i></span>
+          </div>
+        </button>
+
+        <div class="day-meter">
+          <button data-action="daypart"><span>Утро</span><strong>Собраться</strong><i style="--level:78%"></i></button>
+          <button data-action="daypart"><span>День</span><strong>Обсудить</strong><i style="--level:92%"></i></button>
+          <button data-action="daypart"><span>Вечер</span><strong>Замедлиться</strong><i style="--level:58%"></i></button>
+        </div>
+
+        <div class="section-heading"><div><p class="eyebrow">Только для вас</p><h2>Личный прогноз</h2></div><button data-detail="forecast">Весь прогноз</button></div>
+        <article class="forecast-card">
+          <div class="forecast-top"><span class="planet-mark"><i data-lucide="message-circle"></i></span><span class="number">Меркурий · Сатурн</span></div>
+          <p>Хороший момент для разговора, который требует точности и спокойствия. Ваши слова сегодня звучат убедительнее обычного.</p>
+          <div class="advice"><i data-lucide="sparkles"></i><div><span>Совет дня</span>Сформулируйте главное одной фразой.</div></div>
+        </article>
+
+        <div class="section-heading"><div><p class="eyebrow">Персонально</p><h2>Сферы дня</h2></div><span>3 разбора</span></div>
+        <div class="sphere-grid">
+          <button class="sphere-card" data-detail="love"><span class="sphere-icon rose"><i data-lucide="heart"></i></span><small>Любовь</small><strong>Честность</strong><p>Разговор сблизит сильнее жестов</p><em>78%</em></button>
+          <button class="sphere-card accent-card" data-detail="money"><span class="sphere-icon violet"><i data-lucide="wallet-cards"></i></span><small>Деньги</small><strong>Фокус</strong><p>Одна задача важнее пяти идей</p><em>91%</em></button>
+          <button class="sphere-card" data-detail="resource"><span class="sphere-icon mint"><i data-lucide="leaf"></i></span><small>Ресурс</small><strong>Тишина</strong><p>Верните себе медленный вечер</p><em>64%</em></button>
+        </div>
+
+        <article class="week-card">
+          <div><p class="eyebrow">Неделя · 8–14 июня</p><h3>Курс на своё</h3><p>К выходным появится ясность в вопросе, который долго стоял на паузе.</p></div>
+          <button data-paywall="Прогноз на неделю"><i data-lucide="arrow-right"></i></button>
+        </article>
+      </section>
+
+      <section class="screen" id="chart">
+        <div class="eyebrow-row"><p class="eyebrow">Ваша натальная карта</p><button class="icon-button" data-action="share"><i data-lucide="share-2"></i></button></div>
+        <h1>Уникальный<br>рисунок неба</h1>
+        <p class="lead">Москва · 11 июня 1996 · 08:40<br>Система домов: Плацидус</p>
+        <button class="chart-wheel" data-detail="chart" aria-label="Открыть натальную карту">
+          <div class="wheel-inner"><span>♏</span><strong>15°</strong><small>ASC</small></div>
+        </button>
+        <div class="big-three">
+          <button data-detail="sun"><span><i data-lucide="sun"></i> Солнце</span><strong>Близнецы</strong><small>21° 08′ · 9 дом</small></button>
+          <button data-detail="moon"><span><i data-lucide="moon"></i> Луна</span><strong>Скорпион</strong><small>04° 32′ · 1 дом</small></button>
+          <button data-detail="asc"><span><i data-lucide="circle-dot"></i> Асцендент</span><strong>Весы</strong><small>15° 10′</small></button>
+        </div>
+        <div class="section-heading"><div><p class="eyebrow">Основа характера</p><h2>Ваш портрет</h2></div><span>64% прочитано</span></div>
+        <div class="progress"><i></i></div>
+        <div class="accordion">
+          <button class="accordion-head open">Главное о вас <span>−</span></button>
+          <div class="accordion-body open"><p>Вы замечаете связи между вещами раньше других. Любознательность Близнецов сочетается с глубиной Луны в Скорпионе: вам мало знать факт, важно понять его настоящую причину.</p><div class="trait-row"><span>Проницательность</span><span>Гибкость</span><span>Такт</span></div></div>
+          <button class="accordion-head">Сильные стороны <span>+</span></button>
+          <div class="accordion-body"><p>Вы умеете быстро собирать картину из разрозненных деталей, сохранять ясность в эмоциональных ситуациях и переводить сложное на человеческий язык.</p><div class="insight"><i data-lucide="zap"></i><span><b>Ваш ресурс:</b> соединять логику с интуицией.</span></div></div>
+          <button class="accordion-head">Зоны роста <span>+</span></button>
+          <div class="accordion-body"><p>Иногда желание увидеть все варианты мешает выбрать один. Ваш рост начинается там, где исследование превращается в решение.</p></div>
+          <button class="accordion-head">Предназначение <span>+</span></button>
+          <div class="accordion-body"><p>Северный узел во Льве показывает путь от наблюдения к смелому авторству. Ваша задача не только понимать процессы, но и занимать в них заметное место.</p></div>
+          <button class="accordion-head locked" data-paywall="Любовь и близость">Любовь и близость <span><i data-lucide="lock"></i></span></button>
+          <button class="accordion-head locked" data-paywall="Деньги и реализация">Деньги и реализация <span><i data-lucide="lock"></i></span></button>
+        </div>
+      </section>
+
+      <section class="screen" id="universe">
+        <p class="eyebrow">Запрос Вселенной</p>
+        <h1>Спросите о том,<br>что важно</h1>
+        <p class="lead">Ответ сверяется с вашей картой и текущим небом. Конкретный вопрос даст более полезный ориентир.</p>
+        <div class="prompt-chips">
+          <button data-prompt="На чем мне сфокусироваться в работе этим летом?">Работа</button>
+          <button data-prompt="Как лучше поговорить с близким человеком?">Отношения</button>
+          <button data-prompt="Что сейчас поможет вернуть энергию?">Ресурс</button>
+        </div>
+        <div class="ask-card">
+          <label for="question"><i data-lucide="sparkles"></i> Ваш вопрос</label>
+          <textarea id="question" maxlength="220" placeholder="Например: на чем мне лучше сфокусироваться в работе этим летом?"></textarea>
+          <div class="ask-meta"><span id="char-count">0 / 220</span><span>Осталось 8 из 10</span></div>
+          <button class="primary" id="ask-button">Спросить Вселенную <i data-lucide="arrow-up-right"></i></button>
+        </div>
+        <div class="answer-card" id="answer-card">
+          <p class="eyebrow">Ваш ответ · сегодня</p>
+          <h3>Сделайте идею осязаемой</h3>
+          <p>Сейчас ваша карта поддерживает не резкий разворот, а конкретный пробный шаг. Меркурий помогает ясно упаковать мысль, а Сатурн просит проверить её реальностью. Выберите один результат, который можно показать другому человеку уже на этой неделе.</p>
+          <div class="insight"><i data-lucide="compass"></i><span><b>Ориентир:</b> сначала прототип, потом большое решение.</span></div>
+          <button class="secondary" data-action="save-answer">Сохранить ответ</button>
+        </div>
+        <div class="section-heading"><div><p class="eyebrow">Архив</p><h2>Недавние ответы</h2></div><span>12 всего</span></div>
+        <button class="history-card" data-detail="history-work"><span>8 июня · ресурс</span><strong>Как найти баланс между работой и отдыхом?</strong><small>Ваш Марс просит действовать ритмично, а не рывками...</small><i data-lucide="chevron-right"></i></button>
+        <button class="history-card" data-detail="history-project"><span>2 июня · реализация</span><strong>Стоит ли начинать новый проект?</strong><small>Период подходит для исследования и первого прототипа...</small><i data-lucide="chevron-right"></i></button>
+      </section>
+
+      <section class="screen" id="profile">
+        <p class="eyebrow">Профиль</p>
+        <h1>Мария,<br>это ваше небо</h1>
+        <article class="profile-card">
+          <div class="avatar large">МК</div><div><strong>Мария К.</strong><span>@maria_k · Москва</span></div><button data-detail="edit-profile">Изменить</button>
+        </article>
+        <article class="subscription-card">
+          <div class="subscription-icon"><i data-lucide="sparkles"></i></div>
+          <p class="eyebrow">Астро+</p><h2>Больше ясности каждый день</h2>
+          <p>Расширенные прогнозы, полный портрет, недельный обзор и 10 запросов Вселенной в месяц.</p>
+          <div class="benefits"><span><i data-lucide="check"></i> Все сферы дня</span><span><i data-lucide="check"></i> Полный портрет</span><span><i data-lucide="check"></i> Прогноз на неделю</span></div>
+          <button class="primary" data-paywall="Астро+">Попробовать за 299 ₽</button>
+        </article>
+        <div class="section-heading"><div><p class="eyebrow">Настройки</p><h2>Ваше пространство</h2></div></div>
+        <div class="settings">
+          <button data-detail="birth"><i data-lucide="calendar-days"></i><span>Данные рождения<small>11.06.1996 · 08:40 · Москва</small></span><i data-lucide="chevron-right"></i></button>
+          <button class="toggle-row"><i data-lucide="bell-ring"></i><span>Утренний прогноз<small>Каждый день в 07:30</small></span><i class="toggle on"></i></button>
+          <button data-detail="referral"><i data-lucide="users"></i><span>Пригласить друзей<small>До бонуса осталось 2 приглашения</small></span><i data-lucide="chevron-right"></i></button>
+          <button data-paywall="Совместимость"><i data-lucide="orbit"></i><span>Совместимость<small>Новый разбор для двоих</small></span><i data-lucide="chevron-right"></i></button>
+          <button data-detail="about"><i data-lucide="info"></i><span>О продукте<small>Версия прототипа 0.2</small></span><i data-lucide="chevron-right"></i></button>
+        </div>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Основная навигация">
+        <button class="active" data-go="today"><i data-lucide="sun"></i><span>Сегодня</span></button>
+        <button data-go="chart"><i data-lucide="circle-dot-dashed"></i><span>Моя карта</span></button>
+        <button data-go="universe"><i data-lucide="sparkles"></i><span>Вселенная</span></button>
+        <button data-go="profile"><i data-lucide="user-round"></i><span>Профиль</span></button>
+      </nav>
+    </div>
+  </main>
+
+  <div class="sheet-backdrop" id="detail-sheet">
+    <article class="sheet">
+      <div class="sheet-handle"></div><button class="sheet-close" aria-label="Закрыть"><i data-lucide="x"></i></button>
+      <div id="sheet-content"></div>
+    </article>
+  </div>
+  <div class="sheet-backdrop" id="paywall">
+    <article class="sheet paywall-sheet">
+      <div class="sheet-handle"></div><button class="sheet-close" aria-label="Закрыть"><i data-lucide="x"></i></button>
+      <div class="premium-orbit"><i data-lucide="sparkles"></i></div>
+      <p class="eyebrow">Астро+</p><h2 id="paywall-title">Откройте полный разбор</h2>
+      <p>Персональные сферы дня, полный портрет и ответы Вселенной с учетом вашей карты.</p>
+      <div class="paywall-benefits"><span><i data-lucide="check"></i> Ежедневные сферы</span><span><i data-lucide="check"></i> Прогноз на неделю и месяц</span><span><i data-lucide="check"></i> 10 запросов Вселенной</span></div>
+      <div class="price"><strong>299 ₽</strong><span>в месяц · отмена в любой момент</span></div>
+      <button class="primary subscribe">Продолжить в Telegram Stars</button>
+      <small>Развлекательно-рефлексивный продукт</small>
+    </article>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
