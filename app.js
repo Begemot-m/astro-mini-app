@@ -23,7 +23,10 @@ const details = {
   birth: ["calendar-days", "Данные рождения", "Основа расчёта", "Эти данные используются для точного положения планет и домов. В реальном приложении изменение данных запустит новый расчёт карты.", [["Дата", "11 июня 1996"], ["Время", "08:40"], ["Место", "Москва, Россия"], ["Часовой пояс", "UTC+4 на дату рождения"]]],
   referral: ["users", "Пригласить друзей", "Дарите Астро+", "За каждого друга, который оформит подписку, вы получите 7 дополнительных дней Астро+. Ещё два приглашения откроют месяц бесплатно.", [["Приглашено", "1 из 3"], ["Ваша награда", "7 дней Астро+"], ["Ссылка", "t.me/astro_demo_bot?start=ref_maria"]]],
   about: ["info", "Об Астро", "Магия в современной упаковке", "Астро — развлекательно-рефлексивный продукт. Интерпретации помогают посмотреть на привычные ситуации с нового ракурса, но не заменяют профессиональные медицинские, юридические или финансовые рекомендации.", [["Версия", "Прототип 0.2"], ["Расчёт карты", "Swiss Ephemeris"], ["Интерпретация", "Персональный AI-разбор"]]],
-  "edit-profile": ["user-round", "Профиль", "Данные Telegram", "В реальном Mini App имя и аватар загружаются из Telegram. Здесь показан демонстрационный пользователь.", [["Имя", "Мария К."], ["Username", "@maria_k"], ["Город", "Москва"]]]
+  "edit-profile": ["user-round", "Профиль", "Данные Telegram", "В реальном Mini App имя и аватар загружаются из Telegram. Здесь показан демонстрационный пользователь.", [["Имя", "Мария К."], ["Username", "@maria_k"], ["Город", "Москва"]]],
+  terms: ["file-text", "Условия использования", "Безопасная рамка", "Астро предоставляет персонализированные развлекательно-рефлексивные материалы. Интерпретации носят вероятностный характер, могут не совпадать с вашим опытом и не должны быть единственным основанием для важных решений.", [["Не является", "диагнозом, лечением или консультацией"], ["Не гарантирует", "события, доход, отношения или результат"], ["Возраст", "сервис предназначен для пользователей 18+"]]],
+  privacy: ["shield-check", "Конфиденциальность", "Минимум необходимых данных", "Для расчёта карты нужны дата, время и место рождения. Они относятся к персональным данным и должны храниться с согласия пользователя, удаляться по запросу и не передаваться Claude AI в идентифицирующем виде.", [["Claude получает", "обезличенный JSON карты"], ["Не отправляем", "Telegram ID, username и точный адрес"], ["Контроль", "экспорт и удаление данных пользователем"]]],
+  "ai-policy": ["bot", "Как используется Claude AI", "AI только интерпретирует", "Claude получает уже рассчитанную структуру карты и пишет понятный текст по строгой методологии. Он не рассчитывает положения планет, не ставит диагнозы и не выдаёт финансовых, медицинских или юридических рекомендаций.", [["Расчёт", "Swiss Ephemeris"], ["Интерпретация", "Claude API через защищённый backend"], ["Защита", "фильтры тем и мягкий вероятностный язык"]]]
 };
 
 function icons() { if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.8 } }); }
@@ -46,6 +49,81 @@ function showDetail(key) {
   $("[data-sheet-done]").onclick = () => closeSheet(detailSheet);
 }
 
+function polar(cx, cy, radius, angle) {
+  const radians = (angle - 90) * Math.PI / 180;
+  return { x: cx + radius * Math.cos(radians), y: cy + radius * Math.sin(radians) };
+}
+
+function renderNatalChart() {
+  const svg = $("#natal-chart"); if (!svg) return;
+  const NS = "http://www.w3.org/2000/svg";
+  const add = (tag, attrs = {}, text = "") => {
+    const node = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+    if (text) node.textContent = text;
+    svg.appendChild(node); return node;
+  };
+  const line = (a, b, cls) => add("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, class: cls });
+  const zodiac = ["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"];
+  const houses = [272, 303, 331, 2, 35, 65, 92, 122, 151, 182, 213, 244];
+  const planets = [
+    { symbol:"☉", angle:71, degree:"21°", accent:true },
+    { symbol:"☽", angle:214, degree:"04°" },
+    { symbol:"☿", angle:65, degree:"15°", accent:true },
+    { symbol:"♀", angle:49, degree:"29°" },
+    { symbol:"♂", angle:123, degree:"03°" },
+    { symbol:"♃", angle:286, degree:"16°" },
+    { symbol:"♄", angle:348, degree:"06°" },
+    { symbol:"♅", angle:310, degree:"04°" },
+    { symbol:"♆", angle:302, degree:"27°" },
+    { symbol:"♇", angle:251, degree:"00°" }
+  ];
+  add("circle", { cx:180, cy:180, r:166, class:"chart-ring" });
+  add("circle", { cx:180, cy:180, r:139, class:"chart-ring soft" });
+  add("circle", { cx:180, cy:180, r:105, class:"chart-ring" });
+  add("circle", { cx:180, cy:180, r:73, class:"chart-ring soft" });
+  for (let i = 0; i < 12; i++) {
+    line(polar(180,180,139,i*30), polar(180,180,166,i*30), "zodiac-line");
+    const label = polar(180,180,153,i*30+15); add("text",{x:label.x,y:label.y,class:"zodiac-label"},zodiac[i]);
+  }
+  houses.forEach((angle, index) => {
+    line(polar(180,180,73,angle), polar(180,180,139,angle), index === 0 || index === 6 ? "axis-line" : "house-line");
+    const label = polar(180,180,91,angle + 12); add("text",{x:label.x,y:label.y,class:"house-number"},String(index+1));
+  });
+  [["ASC",272],["DSC",92],["MC",2],["IC",182]].forEach(([label, angle]) => {
+    const p = polar(180,180,145,angle); add("text",{x:p.x,y:p.y,class:"axis-label"},label);
+  });
+  [[0,6,"aspect-trine"],[0,4,"aspect-square"],[1,5,"aspect-trine"],[2,7,"aspect-sextile"],[3,8,"aspect-square"],[4,9,"aspect-trine"],[5,7,"aspect-sextile"],[1,8,"aspect-square"]].forEach(([a,b,cls]) => line(polar(180,180,68,planets[a].angle),polar(180,180,68,planets[b].angle),cls));
+  planets.forEach(planet => {
+    const p = polar(180,180,119,planet.angle);
+    add("circle",{cx:p.x,cy:p.y,r:9,class:`planet-node${planet.accent?" accent":""}`});
+    add("text",{x:p.x,y:p.y+.5,class:"planet-symbol"},planet.symbol);
+    const d = polar(180,180,133,planet.angle); add("text",{x:d.x,y:d.y,class:"planet-degree"},planet.degree);
+  });
+  add("circle",{cx:180,cy:180,r:38,class:"chart-center"});
+  add("text",{x:180,y:177,class:"chart-center-title"},"Москва");
+  add("text",{x:180,y:188,class:"chart-center-sub"},"11.06.1996 · 08:40");
+}
+
+function setupOnboarding() {
+  const onboarding = $("#onboarding"); if (!onboarding) return;
+  let slide = 0;
+  const slides = $$(".onboarding-slide", onboarding);
+  const dots = $$(".onboarding-dots i", onboarding);
+  const next = $("#onboarding-next");
+  const update = () => {
+    slides.forEach((item, index) => item.classList.toggle("active", index === slide));
+    dots.forEach((item, index) => item.classList.toggle("active", index === slide));
+    next.innerHTML = slide === slides.length - 1 ? `Начать знакомство <i data-lucide="arrow-right"></i>` : `Продолжить <i data-lucide="arrow-right"></i>`;
+    icons();
+  };
+  next.addEventListener("click", () => {
+    if (slide < slides.length - 1) { slide += 1; update(); haptic("soft"); return; }
+    if (!$("#consent-check").checked) { showToast("Подтвердите согласие, чтобы продолжить"); return; }
+    onboarding.classList.add("hidden"); setTimeout(() => onboarding.remove(), 380); haptic("medium");
+  });
+}
+
 $$("[data-go]").forEach(button => button.addEventListener("click", () => goTo(button.dataset.go)));
 $$("[data-detail]").forEach(button => button.addEventListener("click", () => showDetail(button.dataset.detail)));
 $$("[data-paywall]").forEach(button => button.addEventListener("click", () => { paywallTitle.textContent = `Откройте: ${button.dataset.paywall}`; openSheet(paywall); }));
@@ -66,7 +144,7 @@ $("#ask-button").addEventListener("click", () => {
 });
 
 $(".toggle-row").addEventListener("click", () => { $(".toggle").classList.toggle("on"); showToast($(".toggle").classList.contains("on") ? "Утренний прогноз включён" : "Утренний прогноз выключен"); });
-$(".subscribe").addEventListener("click", () => { closeSheet(paywall); haptic("medium"); showToast("Здесь откроется нативная оплата Telegram Stars"); });
+$(".subscribe").addEventListener("click", () => { closeSheet(paywall); haptic("medium"); showToast("Бесплатный режим продолжает работать"); });
 $$("[data-action]").forEach(button => button.addEventListener("click", () => {
   const messages = { notifications: "Новых прогнозов пока нет", streak: "7 дней подряд — мягкий ритм уже сложился", daypart: "Периоды дня рассчитаны по вашим транзитам", share: "Карточка готова к отправке в Telegram", "save-answer": "Ответ сохранён в избранное" };
   showToast(messages[button.dataset.action] || "Готово"); haptic();
@@ -78,3 +156,5 @@ if (tg) {
   if (user?.first_name) $$(".profile-card strong").forEach(el => el.textContent = user.first_name);
 }
 icons();
+renderNatalChart();
+setupOnboarding();
