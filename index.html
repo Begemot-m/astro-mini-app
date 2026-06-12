@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="enhancements.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="config.js"></script>
 </head>
 <body>
   <div class="onboarding" id="onboarding">
@@ -52,6 +53,37 @@
       <div class="onboarding-dots"><i class="active"></i><i></i><i></i><i></i></div>
       <button class="primary" id="onboarding-next">Продолжить <i data-lucide="arrow-right"></i></button>
     </div>
+  </div>
+  <div class="birth-setup" id="birth-setup">
+    <form class="birth-form" id="birth-form">
+      <div class="birth-step active" data-birth-step="0">
+        <div class="setup-icon"><i data-lucide="calendar-days"></i></div>
+        <p class="eyebrow">Шаг 1 из 3 · основа карты</p>
+        <h1>Когда вы<br>родились?</h1>
+        <p class="lead">Дата определяет положения планет. Введите её точно, как в документах.</p>
+        <label class="field"><span>Дата рождения</span><input id="birth-date" type="date" value="1996-06-11" required></label>
+      </div>
+      <div class="birth-step" data-birth-step="1">
+        <div class="setup-icon"><i data-lucide="clock-3"></i></div>
+        <p class="eyebrow">Шаг 2 из 3 · точность домов</p>
+        <h1>Знаете время<br>рождения?</h1>
+        <p class="lead">Точное время нужно для домов и асцендента. Если не знаете — мы честно построим карту без них.</p>
+        <label class="field" id="time-field"><span>Время рождения</span><input id="birth-time" type="time" value="08:40"></label>
+        <label class="unknown-time"><input id="time-unknown" type="checkbox"><span><b>Время неизвестно</b>Покажем только достоверные положения планет в знаках и аспекты.</span></label>
+      </div>
+      <div class="birth-step" data-birth-step="2">
+        <div class="setup-icon"><i data-lucide="map-pin"></i></div>
+        <p class="eyebrow">Шаг 3 из 3 · место и часовой пояс</p>
+        <h1>Где вы<br>родились?</h1>
+        <p class="lead">Город нужен для координат и исторического часового пояса. Точный адрес не требуется.</p>
+        <label class="field"><span>Город рождения</span><input id="birth-place" type="text" value="Москва, Россия" placeholder="Начните вводить город" required></label>
+        <div class="data-note"><i data-lucide="shield-check"></i><span>Claude получит только обезличенную структуру карты. Дата, город и Telegram-профиль ему не передаются.</span></div>
+      </div>
+      <div class="birth-footer">
+        <div class="birth-progress"><i></i></div>
+        <button class="primary" id="birth-next" type="button">Продолжить <i data-lucide="arrow-right"></i></button>
+      </div>
+    </form>
   </div>
   <main class="phone-shell">
     <div class="app">
@@ -111,12 +143,21 @@
       <section class="screen" id="chart">
         <div class="eyebrow-row"><p class="eyebrow">Ваша натальная карта</p><button class="icon-button" data-action="share"><i data-lucide="share-2"></i></button></div>
         <h1>Уникальный<br>рисунок неба</h1>
-        <p class="lead">Москва · 11 июня 1996 · 08:40<br>Система домов: Плацидус</p>
+        <p class="lead" id="chart-meta">Москва · 11 июня 1996 · 08:40<br>Система домов: Плацидус</p>
+        <div class="truth-banner"><i data-lucide="info"></i><span><b>Символическая схема</b>Визуализация помогает читать структуру и не выдаётся за точный астрономический чертёж. Сейчас показаны демо-данные; при запуске значения должны появляться только после ответа `chart-calc`.</span></div>
         <button class="chart-stage" data-detail="chart" aria-label="Открыть подробности натальной карты">
           <svg id="natal-chart" viewBox="0 0 360 360" role="img" aria-label="Натальная карта с домами, планетами и аспектами"></svg>
           <span class="chart-hint"><i data-lucide="move-up-right"></i> Нажмите, чтобы разобрать карту</span>
         </button>
-        <div class="chart-legend"><span><i class="aspect-line conjunction"></i> соединение</span><span><i class="aspect-line trine"></i> гармония</span><span><i class="aspect-line square"></i> напряжение</span></div>
+        <div class="chart-legend"><span><i class="aspect-line conjunction"></i> знаки</span><span><i class="aspect-line trine"></i> планеты</span><span><i class="aspect-line square"></i> дома при точном времени</span></div>
+        <div class="section-heading"><div><p class="eyebrow">Проверяемые данные</p><h2>Положения планет</h2></div><span>demo · chart-calc pending</span></div>
+        <div class="positions-list">
+          <button data-detail="sun"><span class="position-symbol">☉</span><span><b>Солнце</b><small>Близнецы · 21°08′</small></span><em>9 дом</em></button>
+          <button data-detail="moon"><span class="position-symbol">☽</span><span><b>Луна</b><small>Скорпион · 04°32′</small></span><em>1 дом</em></button>
+          <button data-detail="mercury"><span class="position-symbol">☿</span><span><b>Меркурий</b><small>Близнецы · 15°42′</small></span><em>9 дом</em></button>
+          <button data-detail="venus"><span class="position-symbol">♀</span><span><b>Венера</b><small>Близнецы · 29°11′</small></span><em>9 дом</em></button>
+          <button data-detail="mars"><span class="position-symbol">♂</span><span><b>Марс</b><small>Телец · 03°18′</small></span><em>7 дом</em></button>
+        </div>
         <div class="big-three">
           <button data-detail="sun"><span><i data-lucide="sun"></i> Солнце</span><strong>Близнецы</strong><small>21° 08′ · 9 дом</small></button>
           <button data-detail="moon"><span><i data-lucide="moon"></i> Луна</span><strong>Скорпион</strong><small>04° 32′ · 1 дом</small></button>
@@ -132,9 +173,15 @@
           <button class="accordion-head">Зоны роста <span>+</span></button>
           <div class="accordion-body"><p>Иногда желание увидеть все варианты мешает выбрать один. Ваш рост начинается там, где исследование превращается в решение.</p></div>
           <button class="accordion-head">Предназначение <span>+</span></button>
-          <div class="accordion-body"><p>Северный узел во Льве показывает путь от наблюдения к смелому авторству. Ваша задача не только понимать процессы, но и занимать в них заметное место.</p></div>
-          <button class="accordion-head locked" data-paywall="Любовь и близость">Любовь и близость <span><i data-lucide="lock"></i></span></button>
-          <button class="accordion-head locked" data-paywall="Деньги и реализация">Деньги и реализация <span><i data-lucide="lock"></i></span></button>
+          <div class="accordion-body"><p>Северный узел во Льве показывает путь от наблюдения к смелому авторству. Ваша задача не только понимать процессы, но и занимать в них заметное место.</p><p>Это может проявляться как постепенный переход от роли человека, который помогает другим сформулировать идеи, к роли автора, способного обозначить собственное видение. Вам полезно не ждать абсолютной уверенности, а показывать промежуточный результат и позволять себе быть заметной.</p></div>
+          <button class="accordion-head">Мышление и общение <span>+</span></button>
+          <div class="accordion-body"><p>Меркурий в Близнецах делает мышление быстрым, ассоциативным и подвижным. Вы легко находите неожиданные связи, хорошо чувствуете язык собеседника и умеете менять способ объяснения на ходу.</p><p>Обратная сторона — информационная перегрузка и желание продолжать исследование, когда уже пора сформулировать вывод. Лучше всего вы звучите, когда заранее выбираете одну главную мысль.</p></div>
+          <button class="accordion-head">Эмоциональный мир <span>+</span></button>
+          <div class="accordion-body"><p>Луна в Скорпионе символически описывает глубокую эмоциональную восприимчивость. Вы можете замечать напряжение и подтекст раньше, чем они становятся очевидны другим.</p><p>Для восстановления вам важны приватность, доверие и возможность честно назвать переживание. Это описание не является психологической диагностикой — сверяйте его со своим опытом.</p></div>
+          <button class="accordion-head">Любовь и близость <span>+</span></button>
+          <div class="accordion-body"><p>Сочетание воздушного Солнца и глубокой Луны может создавать два одновременных запроса: вам нужен живой, свободный диалог и при этом эмоциональная надёжность. Лёгкость без искренности быстро теряет ценность, а интенсивность без пространства начинает утомлять.</p><p>В близости полезно прямо проговаривать, когда вам нужен разговор, а когда — время переварить чувства в одиночестве. Полный разбор отношений Claude составляет по всей структуре карты, а не по одному знаку.</p><button class="inline-paywall" data-paywall="Полный разбор отношений">Получить полный разбор</button></div>
+          <button class="accordion-head">Деньги и реализация <span>+</span></button>
+          <div class="accordion-body"><p>Ваша сильная сторона в реализации — быстро понимать контекст, видеть несколько вариантов и находить точную формулировку. Это может быть полезно в работе с информацией, продуктами, обучением, коммуникациями и задачами на стыке областей.</p><p>Риск возникает, когда интерес к следующей идее появляется раньше, чем текущая получила форму. Для устойчивого результата полезны короткие циклы: выбрать гипотезу, сделать видимый результат, получить обратную связь и только затем расширять направление.</p><button class="inline-paywall" data-paywall="Полный разбор реализации">Получить полный разбор</button></div>
         </div>
       </section>
 
@@ -154,7 +201,7 @@
           <button class="primary" id="ask-button">Спросить Вселенную <i data-lucide="arrow-up-right"></i></button>
         </div>
         <div class="answer-card" id="answer-card">
-          <p class="eyebrow">Claude AI · ответ сегодня</p>
+          <p class="eyebrow" id="answer-source">Демо-ответ · Claude подключается после backend</p>
           <h3>Сделайте идею осязаемой</h3>
           <p>Сейчас ваша карта поддерживает не резкий разворот, а конкретный пробный шаг. Меркурий помогает ясно упаковать мысль, а Сатурн просит проверить её реальностью. Выберите один результат, который можно показать другому человеку уже на этой неделе.</p>
           <div class="insight"><i data-lucide="compass"></i><span><b>Ориентир:</b> сначала прототип, потом большое решение.</span></div>
@@ -182,6 +229,7 @@
         <div class="section-heading"><div><p class="eyebrow">Настройки</p><h2>Ваше пространство</h2></div></div>
         <div class="settings">
           <button data-detail="birth"><i data-lucide="calendar-days"></i><span>Данные рождения<small>11.06.1996 · 08:40 · Москва</small></span><i data-lucide="chevron-right"></i></button>
+          <button data-detail="subscription-management"><i data-lucide="credit-card"></i><span>Управление подпиской<small>Статус, чеки и отключение автопродления</small></span><i data-lucide="chevron-right"></i></button>
           <button class="toggle-row"><i data-lucide="bell-ring"></i><span>Утренний прогноз<small>Каждый день в 07:30</small></span><i class="toggle on"></i></button>
           <button data-detail="referral"><i data-lucide="users"></i><span>Пригласить друзей<small>До бонуса осталось 2 приглашения</small></span><i data-lucide="chevron-right"></i></button>
           <button data-paywall="Совместимость"><i data-lucide="orbit"></i><span>Совместимость<small>Новый разбор для двоих</small></span><i data-lucide="chevron-right"></i></button>
@@ -212,11 +260,13 @@
       <div class="sheet-handle"></div><button class="sheet-close" aria-label="Закрыть"><i data-lucide="x"></i></button>
       <div class="premium-orbit"><i data-lucide="sparkles"></i></div>
       <p class="eyebrow">Астро+</p><h2 id="paywall-title">Откройте полный разбор</h2>
-      <p>Внутри Telegram цифровые подписки должны оплачиваться Stars. Пока Stars недоступны, Астро работает в бесплатном режиме — без обходных платежей и скрытых списаний.</p>
+      <p>Оплата проходит на защищённой странице ЮKassa вне Telegram. После успешного платежа подписка привязывается к вашему аккаунту автоматически.</p>
       <div class="paywall-benefits"><span><i data-lucide="check"></i> Ежедневные сферы</span><span><i data-lucide="check"></i> Прогноз на неделю и месяц</span><span><i data-lucide="check"></i> 10 запросов Вселенной</span></div>
-      <div class="price"><strong>Бесплатная beta</strong><span>платная версия появится после запуска безопасной оплаты</span></div>
-      <button class="primary subscribe">Понятно, продолжить бесплатно</button>
-      <small>Оплата через ЮKassa возможна в отдельной веб-версии сервиса</small>
+      <label class="field payment-email"><span>Email для электронного чека</span><input id="payment-email" type="email" placeholder="name@example.ru"></label>
+      <label class="payment-consent"><input id="payment-consent" type="checkbox"><span>Согласен с <button data-detail="offer">офертой</button>, обработкой данных и условиями подписки: 299 ₽ каждые 30 дней. Автопродление можно отключить в профиле.</span></label>
+      <div class="price"><strong>299 ₽</strong><span>каждые 30 дней · чек на email · отмена в профиле</span></div>
+      <button class="primary subscribe">Перейти к оплате ЮKassa</button>
+      <small>Платёжная страница откроется во внешнем браузере</small>
     </article>
   </div>
   <div class="toast" id="toast"></div>
