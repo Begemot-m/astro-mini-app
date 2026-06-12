@@ -1,0 +1,33 @@
+name: Static quality checks
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required public pages
+        run: |
+          test -f index.html
+          test -f site/index.html
+          test -f checkout.html
+          test -f legal/offer.html
+          test -f legal/privacy.html
+          test -f legal/terms.html
+          test -f legal/consent.html
+          test -f legal/refund.html
+      - name: Reject committed secrets
+        run: |
+          ! grep -R --exclude='.env.example' --exclude='quality.yml' -E 'ANTHROPIC_API_KEY=.{8,}|YOOKASSA_SECRET_KEY=.{8,}|SUPABASE_SERVICE_ROLE_KEY=.{8,}' .
+      - name: Reject destructive SQL in migrations
+        run: |
+          ! grep -RinE 'drop[[:space:]]+(table|column)|truncate[[:space:]]|delete[[:space:]]+from' supabase/migrations
