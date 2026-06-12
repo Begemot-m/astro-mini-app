@@ -1,6 +1,8 @@
-# Астро — интерактивный прототип Telegram Mini App
+# Астро — открытая стартовая версия Telegram Mini App
 
 Автономный frontend-прототип с адаптацией под Telegram WebApp SDK.
+
+Публичный репозиторий можно редактировать напрямую: `https://github.com/Begemot-m/astro-mini-app`.
 
 ## Запуск
 
@@ -29,6 +31,10 @@
 - прозрачное разделение расчёта Swiss Ephemeris и интерпретации Claude AI.
 
 Архитектурные рекомендации по Claude AI, оплате и юридической рамке описаны в `ARCHITECTURE.md`.
+
+Начните запуск с `LAUNCH_GUIDE.md`. Продуктовая граница бесплатного и платного описана в `PRODUCT_MODEL.md`.
+
+Для простого редактирования используйте `EDITING_GUIDE.md`. Правила безопасности описаны в `SECURITY.md`.
 
 ## Подключение production backend
 
