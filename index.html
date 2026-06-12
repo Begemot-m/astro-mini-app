@@ -10,10 +10,49 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="enhancements.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
+  <div class="onboarding" id="onboarding">
+    <div class="onboarding-track">
+      <section class="onboarding-slide active" data-slide="0">
+        <div class="intro-sky">
+          <span class="intro-orbit one"></span><span class="intro-orbit two"></span>
+          <i data-lucide="sparkles"></i>
+        </div>
+        <p class="eyebrow">Добро пожаловать в Астро</p>
+        <h1>Небо как повод<br>услышать себя</h1>
+        <p>Астрология сопоставляет момент рождения с символической картой неба. Мы используем её не как приговор, а как язык для размышления о привычках, сильных сторонах и текущем настроении.</p>
+      </section>
+      <section class="onboarding-slide" data-slide="1">
+        <div class="intro-icon-grid"><span><i data-lucide="orbit"></i></span><span><i data-lucide="calculator"></i></span><span><i data-lucide="messages-square"></i></span></div>
+        <p class="eyebrow">Как это работает</p>
+        <h1>Расчёт точный.<br>Текст человечный.</h1>
+        <p>Положения планет и домов рассчитываются астрономическим движком Swiss Ephemeris. Затем Claude AI превращает структуру карты в понятную, мягкую интерпретацию. Нейросеть не рассчитывает карту и не придумывает положения планет.</p>
+        <div class="intro-points"><span><b>01</b> Данные рождения</span><span><b>02</b> Астрономический расчёт</span><span><b>03</b> Интерпретация Claude AI</span></div>
+      </section>
+      <section class="onboarding-slide" data-slide="2">
+        <div class="intro-compass"><i data-lucide="compass"></i></div>
+        <p class="eyebrow">Чем может быть полезно</p>
+        <h1>Замечать,<br>а не подчиняться</h1>
+        <p>Астро помогает сформулировать вопросы к себе, увидеть повторяющиеся сценарии и выбрать фокус дня. Сверяйте интерпретации со своим опытом и оставляйте только то, что действительно откликается.</p>
+        <div class="intro-cards"><span>Понять свой ритм</span><span>Назвать сильные стороны</span><span>Посмотреть на ситуацию иначе</span></div>
+      </section>
+      <section class="onboarding-slide" data-slide="3">
+        <div class="intro-safety"><i data-lucide="shield-check"></i></div>
+        <p class="eyebrow">Важная ремарка</p>
+        <h1>Мягкий ориентир,<br>не диагноз</h1>
+        <p>Астро — развлекательно-рефлексивный сервис. Материалы не являются научным заключением, медицинской, психологической, юридической или финансовой рекомендацией и не гарантируют событий.</p>
+        <label class="consent"><input type="checkbox" id="consent-check"><span>Мне исполнилось 18 лет. Я понимаю характер сервиса и принимаю <button data-detail="terms">условия использования</button> и <button data-detail="privacy">обработку данных</button>.</span></label>
+      </section>
+    </div>
+    <div class="onboarding-footer">
+      <div class="onboarding-dots"><i class="active"></i><i></i><i></i><i></i></div>
+      <button class="primary" id="onboarding-next">Продолжить <i data-lucide="arrow-right"></i></button>
+    </div>
+  </div>
   <main class="phone-shell">
     <div class="app">
       <header class="topbar">
@@ -26,7 +65,7 @@
 
       <section class="screen active" id="today">
         <div class="eyebrow-row">
-          <p class="eyebrow">Четверг, 11 июня</p>
+          <p class="eyebrow">Пятница, 12 июня</p>
           <button class="streak" data-action="streak"><i data-lucide="flame"></i> 7 дней</button>
         </div>
         <h1>День ясных<br>решений</h1>
@@ -66,15 +105,18 @@
           <div><p class="eyebrow">Неделя · 8–14 июня</p><h3>Курс на своё</h3><p>К выходным появится ясность в вопросе, который долго стоял на паузе.</p></div>
           <button data-paywall="Прогноз на неделю"><i data-lucide="arrow-right"></i></button>
         </article>
+        <button class="safety-note" data-detail="terms"><i data-lucide="shield-check"></i><span><b>Мягкий ориентир</b>Прогноз помогает размышлять, но не предсказывает события и не заменяет профессиональную помощь.</span><i data-lucide="chevron-right"></i></button>
       </section>
 
       <section class="screen" id="chart">
         <div class="eyebrow-row"><p class="eyebrow">Ваша натальная карта</p><button class="icon-button" data-action="share"><i data-lucide="share-2"></i></button></div>
         <h1>Уникальный<br>рисунок неба</h1>
         <p class="lead">Москва · 11 июня 1996 · 08:40<br>Система домов: Плацидус</p>
-        <button class="chart-wheel" data-detail="chart" aria-label="Открыть натальную карту">
-          <div class="wheel-inner"><span>♏</span><strong>15°</strong><small>ASC</small></div>
+        <button class="chart-stage" data-detail="chart" aria-label="Открыть подробности натальной карты">
+          <svg id="natal-chart" viewBox="0 0 360 360" role="img" aria-label="Натальная карта с домами, планетами и аспектами"></svg>
+          <span class="chart-hint"><i data-lucide="move-up-right"></i> Нажмите, чтобы разобрать карту</span>
         </button>
+        <div class="chart-legend"><span><i class="aspect-line conjunction"></i> соединение</span><span><i class="aspect-line trine"></i> гармония</span><span><i class="aspect-line square"></i> напряжение</span></div>
         <div class="big-three">
           <button data-detail="sun"><span><i data-lucide="sun"></i> Солнце</span><strong>Близнецы</strong><small>21° 08′ · 9 дом</small></button>
           <button data-detail="moon"><span><i data-lucide="moon"></i> Луна</span><strong>Скорпион</strong><small>04° 32′ · 1 дом</small></button>
@@ -112,11 +154,12 @@
           <button class="primary" id="ask-button">Спросить Вселенную <i data-lucide="arrow-up-right"></i></button>
         </div>
         <div class="answer-card" id="answer-card">
-          <p class="eyebrow">Ваш ответ · сегодня</p>
+          <p class="eyebrow">Claude AI · ответ сегодня</p>
           <h3>Сделайте идею осязаемой</h3>
           <p>Сейчас ваша карта поддерживает не резкий разворот, а конкретный пробный шаг. Меркурий помогает ясно упаковать мысль, а Сатурн просит проверить её реальностью. Выберите один результат, который можно показать другому человеку уже на этой неделе.</p>
           <div class="insight"><i data-lucide="compass"></i><span><b>Ориентир:</b> сначала прототип, потом большое решение.</span></div>
           <button class="secondary" data-action="save-answer">Сохранить ответ</button>
+          <small class="answer-disclaimer">Сверяйте ответ со своим опытом. Это не профессиональная рекомендация.</small>
         </div>
         <div class="section-heading"><div><p class="eyebrow">Архив</p><h2>Недавние ответы</h2></div><span>12 всего</span></div>
         <button class="history-card" data-detail="history-work"><span>8 июня · ресурс</span><strong>Как найти баланс между работой и отдыхом?</strong><small>Ваш Марс просит действовать ритмично, а не рывками...</small><i data-lucide="chevron-right"></i></button>
@@ -134,7 +177,7 @@
           <p class="eyebrow">Астро+</p><h2>Больше ясности каждый день</h2>
           <p>Расширенные прогнозы, полный портрет, недельный обзор и 10 запросов Вселенной в месяц.</p>
           <div class="benefits"><span><i data-lucide="check"></i> Все сферы дня</span><span><i data-lucide="check"></i> Полный портрет</span><span><i data-lucide="check"></i> Прогноз на неделю</span></div>
-          <button class="primary" data-paywall="Астро+">Попробовать за 299 ₽</button>
+          <button class="primary" data-paywall="Астро+">Узнать о подписке</button>
         </article>
         <div class="section-heading"><div><p class="eyebrow">Настройки</p><h2>Ваше пространство</h2></div></div>
         <div class="settings">
@@ -143,6 +186,9 @@
           <button data-detail="referral"><i data-lucide="users"></i><span>Пригласить друзей<small>До бонуса осталось 2 приглашения</small></span><i data-lucide="chevron-right"></i></button>
           <button data-paywall="Совместимость"><i data-lucide="orbit"></i><span>Совместимость<small>Новый разбор для двоих</small></span><i data-lucide="chevron-right"></i></button>
           <button data-detail="about"><i data-lucide="info"></i><span>О продукте<small>Версия прототипа 0.2</small></span><i data-lucide="chevron-right"></i></button>
+          <button data-detail="ai-policy"><i data-lucide="bot"></i><span>Как используется AI<small>Claude AI интерпретирует, но не рассчитывает</small></span><i data-lucide="chevron-right"></i></button>
+          <button data-detail="terms"><i data-lucide="file-text"></i><span>Условия и ограничения<small>Правила безопасного использования</small></span><i data-lucide="chevron-right"></i></button>
+          <button data-detail="privacy"><i data-lucide="shield-check"></i><span>Конфиденциальность<small>Какие данные нужны для карты</small></span><i data-lucide="chevron-right"></i></button>
         </div>
       </section>
 
@@ -166,11 +212,11 @@
       <div class="sheet-handle"></div><button class="sheet-close" aria-label="Закрыть"><i data-lucide="x"></i></button>
       <div class="premium-orbit"><i data-lucide="sparkles"></i></div>
       <p class="eyebrow">Астро+</p><h2 id="paywall-title">Откройте полный разбор</h2>
-      <p>Персональные сферы дня, полный портрет и ответы Вселенной с учетом вашей карты.</p>
+      <p>Внутри Telegram цифровые подписки должны оплачиваться Stars. Пока Stars недоступны, Астро работает в бесплатном режиме — без обходных платежей и скрытых списаний.</p>
       <div class="paywall-benefits"><span><i data-lucide="check"></i> Ежедневные сферы</span><span><i data-lucide="check"></i> Прогноз на неделю и месяц</span><span><i data-lucide="check"></i> 10 запросов Вселенной</span></div>
-      <div class="price"><strong>299 ₽</strong><span>в месяц · отмена в любой момент</span></div>
-      <button class="primary subscribe">Продолжить в Telegram Stars</button>
-      <small>Развлекательно-рефлексивный продукт</small>
+      <div class="price"><strong>Бесплатная beta</strong><span>платная версия появится после запуска безопасной оплаты</span></div>
+      <button class="primary subscribe">Понятно, продолжить бесплатно</button>
+      <small>Оплата через ЮKassa возможна в отдельной веб-версии сервиса</small>
     </article>
   </div>
   <div class="toast" id="toast"></div>
