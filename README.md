@@ -29,3 +29,15 @@
 - прозрачное разделение расчёта Swiss Ephemeris и интерпретации Claude AI.
 
 Архитектурные рекомендации по Claude AI, оплате и юридической рамке описаны в `ARCHITECTURE.md`.
+
+## Подключение production backend
+
+1. Создайте Supabase-проект и примените `supabase/migrations/001_initial.sql`.
+2. Установите секреты из `.env.example` через Supabase Secrets.
+3. Задеплойте функции `chart-calc`, `interpret`, `create-payment`, `yookassa-webhook`, `cancel-subscription`, `renew-subscriptions`.
+4. Укажите URL функции `create-payment` в `config.js`.
+5. Настройте webhook ЮKassa на URL функции `yookassa-webhook`.
+6. Подключите Swiss Ephemeris микросервис через `CHART_CALC_URL`.
+7. Настройте ежедневный cron для `renew-subscriptions` с секретом `CRON_SECRET`.
+
+Пока `chart-calc` не подключён, интерфейс честно маркирует положения планет как демонстрационные.
