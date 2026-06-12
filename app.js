@@ -27,6 +27,10 @@ const details = {
   terms: ["file-text", "Условия использования", "Безопасная рамка", "Астро предоставляет персонализированные развлекательно-рефлексивные материалы. Интерпретации носят вероятностный характер, могут не совпадать с вашим опытом и не должны быть единственным основанием для важных решений.", [["Не является", "диагнозом, лечением или консультацией"], ["Не гарантирует", "события, доход, отношения или результат"], ["Возраст", "сервис предназначен для пользователей 18+"]]],
   privacy: ["shield-check", "Конфиденциальность", "Минимум необходимых данных", "Для расчёта карты нужны дата, время и место рождения. Они относятся к персональным данным и должны храниться с согласия пользователя, удаляться по запросу и не передаваться Claude AI в идентифицирующем виде.", [["Claude получает", "обезличенный JSON карты"], ["Не отправляем", "Telegram ID, username и точный адрес"], ["Контроль", "экспорт и удаление данных пользователем"]]],
   "ai-policy": ["bot", "Как используется Claude AI", "AI только интерпретирует", "Claude получает уже рассчитанную структуру карты и пишет понятный текст по строгой методологии. Он не рассчитывает положения планет, не ставит диагнозы и не выдаёт финансовых, медицинских или юридических рекомендаций.", [["Расчёт", "Swiss Ephemeris"], ["Интерпретация", "Claude API через защищённый backend"], ["Защита", "фильтры тем и мягкий вероятностный язык"]]]
+  ,mercury: ["message-circle", "Меркурий в Близнецах", "Мышление и речь", "Символически это положение связано с быстрым мышлением, любопытством и способностью переключаться между разными точками зрения. Проверяйте описание по своему опыту.", [["Положение", "Близнецы · 15°42′"], ["Может помогать", "объяснять сложное простыми словами"], ["Зона внимания", "информационная перегрузка"]]]
+  ,venus: ["heart", "Венера в Близнецах", "Вкус и отношения", "В отношениях вам может быть особенно важен живой обмен мыслями, лёгкость и ощущение, что рядом можно оставаться любопытной.", [["Положение", "Близнецы · 29°11′"], ["Ценность", "интерес и диалог"], ["Проверить по опыту", "насколько вам важна свобода общения"]]]
+  ,offer: ["file-check-2", "Условия подписки", "ЮKassa · внешний checkout", "Подписка оформляется на самостоятельном веб-сервисе. Перед оплатой пользователь видит цену, периодичность, условия автопродления, возврата и отключения. Доступ открывается только после подтверждённого webhook ЮKassa.", [["Цена", "299 ₽ каждые 30 дней"], ["Отмена", "самостоятельно в профиле"], ["Оплата", "защищённая страница ЮKassa"]]]
+  ,"subscription-management": ["credit-card", "Управление подпиской", "Контроль списаний", "В production здесь отображаются актуальный статус, дата следующего списания, история чеков и кнопка отключения автопродления. Отключение не удаляет уже оплаченный доступ.", [["Статус демо", "подписка не оформлена"], ["Автопродление", "выключается одним действием"], ["Возврат", "по правилам публичной оферты"]]]
 };
 
 function icons() { if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.8 } }); }
@@ -54,8 +58,9 @@ function polar(cx, cy, radius, angle) {
   return { x: cx + radius * Math.cos(radians), y: cy + radius * Math.sin(radians) };
 }
 
-function renderNatalChart() {
+function renderNatalChart(timeUnknown = false) {
   const svg = $("#natal-chart"); if (!svg) return;
+  svg.innerHTML = "";
   const NS = "http://www.w3.org/2000/svg";
   const add = (tag, attrs = {}, text = "") => {
     const node = document.createElementNS(NS, tag);
@@ -86,14 +91,15 @@ function renderNatalChart() {
     line(polar(180,180,139,i*30), polar(180,180,166,i*30), "zodiac-line");
     const label = polar(180,180,153,i*30+15); add("text",{x:label.x,y:label.y,class:"zodiac-label"},zodiac[i]);
   }
-  houses.forEach((angle, index) => {
-    line(polar(180,180,73,angle), polar(180,180,139,angle), index === 0 || index === 6 ? "axis-line" : "house-line");
-    const label = polar(180,180,91,angle + 12); add("text",{x:label.x,y:label.y,class:"house-number"},String(index+1));
-  });
-  [["ASC",272],["DSC",92],["MC",2],["IC",182]].forEach(([label, angle]) => {
-    const p = polar(180,180,145,angle); add("text",{x:p.x,y:p.y,class:"axis-label"},label);
-  });
-  [[0,6,"aspect-trine"],[0,4,"aspect-square"],[1,5,"aspect-trine"],[2,7,"aspect-sextile"],[3,8,"aspect-square"],[4,9,"aspect-trine"],[5,7,"aspect-sextile"],[1,8,"aspect-square"]].forEach(([a,b,cls]) => line(polar(180,180,68,planets[a].angle),polar(180,180,68,planets[b].angle),cls));
+  if (!timeUnknown) {
+    houses.forEach((angle, index) => {
+      line(polar(180,180,73,angle), polar(180,180,139,angle), index === 0 || index === 6 ? "axis-line" : "house-line");
+      const label = polar(180,180,91,angle + 12); add("text",{x:label.x,y:label.y,class:"house-number"},String(index+1));
+    });
+    [["ASC",272],["DSC",92],["MC",2],["IC",182]].forEach(([label, angle]) => {
+      const p = polar(180,180,145,angle); add("text",{x:p.x,y:p.y,class:"axis-label"},label);
+    });
+  }
   planets.forEach(planet => {
     const p = polar(180,180,119,planet.angle);
     add("circle",{cx:p.x,cy:p.y,r:9,class:`planet-node${planet.accent?" accent":""}`});
@@ -102,7 +108,7 @@ function renderNatalChart() {
   });
   add("circle",{cx:180,cy:180,r:38,class:"chart-center"});
   add("text",{x:180,y:177,class:"chart-center-title"},"Москва");
-  add("text",{x:180,y:188,class:"chart-center-sub"},"11.06.1996 · 08:40");
+  add("text",{x:180,y:188,class:"chart-center-sub"},timeUnknown ? "карта без домов" : "структурная схема");
 }
 
 function setupOnboarding() {
@@ -120,7 +126,35 @@ function setupOnboarding() {
   next.addEventListener("click", () => {
     if (slide < slides.length - 1) { slide += 1; update(); haptic("soft"); return; }
     if (!$("#consent-check").checked) { showToast("Подтвердите согласие, чтобы продолжить"); return; }
-    onboarding.classList.add("hidden"); setTimeout(() => onboarding.remove(), 380); haptic("medium");
+    onboarding.classList.add("hidden"); setTimeout(() => { onboarding.remove(); $("#birth-setup").classList.add("open"); icons(); }, 380); haptic("medium");
+  });
+}
+
+function setupBirthFlow() {
+  let step = 0;
+  const steps = $$(".birth-step");
+  const next = $("#birth-next");
+  const unknown = $("#time-unknown");
+  unknown.addEventListener("change", () => $("#time-field").classList.toggle("disabled", unknown.checked));
+  const update = () => {
+    steps.forEach((item, index) => item.classList.toggle("active", index === step));
+    $(".birth-progress i").style.width = `${((step + 1) / steps.length) * 100}%`;
+    next.innerHTML = step === steps.length - 1 ? `Построить карту <i data-lucide="sparkles"></i>` : `Продолжить <i data-lucide="arrow-right"></i>`;
+    icons();
+  };
+  next.addEventListener("click", () => {
+    if (step === 0 && !$("#birth-date").value) return showToast("Укажите дату рождения");
+    if (step === 2 && !$("#birth-place").value.trim()) return showToast("Укажите город рождения");
+    if (step < steps.length - 1) { step += 1; update(); return; }
+    const place = $("#birth-place").value.trim();
+    const date = new Date(`${$("#birth-date").value}T12:00:00`);
+    const formatted = Number.isNaN(date.getTime()) ? $("#birth-date").value : date.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
+    $("#chart-meta").innerHTML = unknown.checked ? `${place} · ${formatted}<br>Время неизвестно · карта без домов` : `${place} · ${formatted} · ${$("#birth-time").value}<br>Система домов: Плацидус`;
+    $$(".positions-list em").forEach(em => { if (unknown.checked) em.textContent = "дом не рассчитан"; });
+    $(".big-three button:last-child").style.display = unknown.checked ? "none" : "";
+    renderNatalChart(unknown.checked);
+    $("#birth-setup").classList.remove("open");
+    showToast("Данные сохранены. В production здесь запустится расчёт Swiss Ephemeris.");
   });
 }
 
@@ -140,11 +174,40 @@ question.addEventListener("input", () => $("#char-count").textContent = `${quest
 $$("[data-prompt]").forEach(button => button.addEventListener("click", () => { question.value = button.dataset.prompt; question.dispatchEvent(new Event("input")); question.focus(); }));
 $("#ask-button").addEventListener("click", () => {
   if (!question.value.trim()) { question.focus(); showToast("Сначала напишите вопрос"); return; }
-  $("#answer-card").classList.add("show"); question.value = ""; question.dispatchEvent(new Event("input")); haptic("medium"); showToast("Ответ готов и сохранён в истории"); setTimeout(() => $("#answer-card").scrollIntoView({ behavior: "smooth", block: "center" }), 180);
+  const userQuestion = question.value.trim();
+  const endpoint = window.ASTRO_CONFIG?.interpretationApiUrl;
+  const token = localStorage.getItem("astro_access_token");
+  const reveal = () => {
+    $("#answer-card").classList.add("show"); question.value = ""; question.dispatchEvent(new Event("input")); haptic("medium");
+    setTimeout(() => $("#answer-card").scrollIntoView({ behavior: "smooth", block: "center" }), 180);
+  };
+  if (!endpoint || !token) { reveal(); showToast("Показан демо-ответ. Подключите Claude backend для генерации."); return; }
+  $("#ask-button").textContent = "Claude готовит ответ…";
+  fetch(endpoint, { method:"POST", headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}, body:JSON.stringify({ task:"universe_answer", chart:JSON.parse(localStorage.getItem("astro_chart_json") || "{}"), question:userQuestion }) })
+    .then(response => response.ok ? response.json() : Promise.reject())
+    .then(() => { $("#answer-source").textContent = "Claude AI · ответ сегодня"; reveal(); showToast("Ответ Claude сохранён в истории"); })
+    .catch(() => { reveal(); showToast("Claude временно недоступен — показан демо-ответ"); })
+    .finally(() => { $("#ask-button").innerHTML = `Спросить Вселенную <i data-lucide="arrow-up-right"></i>`; icons(); });
 });
 
 $(".toggle-row").addEventListener("click", () => { $(".toggle").classList.toggle("on"); showToast($(".toggle").classList.contains("on") ? "Утренний прогноз включён" : "Утренний прогноз выключен"); });
-$(".subscribe").addEventListener("click", () => { closeSheet(paywall); haptic("medium"); showToast("Бесплатный режим продолжает работать"); });
+$(".subscribe").addEventListener("click", async () => {
+  if (!$("#payment-consent").checked) return showToast("Подтвердите условия подписки");
+  const receiptEmail = $("#payment-email").value.trim();
+  if (!receiptEmail.includes("@")) return showToast("Укажите email для электронного чека");
+  const fallback = new URL("checkout.html", window.location.href).href;
+  try {
+    if (!window.ASTRO_CONFIG?.paymentApiUrl) throw new Error("demo");
+    const token = localStorage.getItem("astro_access_token");
+    if (!token) throw new Error("auth");
+    const response = await fetch(window.ASTRO_CONFIG.paymentApiUrl, { method:"POST", headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`}, body:JSON.stringify({plan:"astro_plus_monthly",return_url:window.location.href,receipt_email:receiptEmail}) });
+    if (!response.ok) throw new Error("payment");
+    const { confirmation_url } = await response.json();
+    tg?.openLink ? tg.openLink(confirmation_url) : window.open(confirmation_url, "_blank", "noopener");
+  } catch (_) {
+    tg?.openLink ? tg.openLink(fallback) : window.open(fallback, "_blank", "noopener");
+  }
+});
 $$("[data-action]").forEach(button => button.addEventListener("click", () => {
   const messages = { notifications: "Новых прогнозов пока нет", streak: "7 дней подряд — мягкий ритм уже сложился", daypart: "Периоды дня рассчитаны по вашим транзитам", share: "Карточка готова к отправке в Telegram", "save-answer": "Ответ сохранён в избранное" };
   showToast(messages[button.dataset.action] || "Готово"); haptic();
@@ -158,3 +221,4 @@ if (tg) {
 icons();
 renderNatalChart();
 setupOnboarding();
+setupBirthFlow();
