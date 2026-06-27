@@ -181,6 +181,19 @@ function setupBirthFlow() {
     $$(".positions-list em").forEach(em => { if (unknown.checked) em.textContent = "дом не рассчитан"; });
     $(".big-three button:last-child").style.display = unknown.checked ? "none" : "";
     renderNatalChart(unknown.checked);
+    // Сохраняем карту для запросов к AI (иначе interpret получает пустой chart → обезличенный ответ).
+    const chartJson = {
+      birth: {
+        date: $("#birth-date").value,
+        time: unknown.checked ? null : $("#birth-time").value,
+        time_unknown: unknown.checked,
+        place,
+      },
+      sun_sign: sunSignFromDate($("#birth-date").value),
+      houses_system: unknown.checked ? null : "Placidus",
+      note: "Базовые данные рождения. Полный расчёт Swiss Ephemeris подключается на backend (chart-calc).",
+    };
+    localStorage.setItem("astro_chart_json", JSON.stringify(chartJson));
     $("#birth-setup").classList.remove("open");
     showToast("Данные сохранены. В production здесь запустится расчёт Swiss Ephemeris.");
   });
