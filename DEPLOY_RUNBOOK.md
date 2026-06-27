@@ -33,7 +33,7 @@ git push origin main
 
 Полная пошаговая инструкция — в `GROQ_TEST_GUIDE.md`. Кратко:
 
-1. Создать проект Supabase, применить миграции `001 → 005` в SQL Editor.
+1. Создать проект Supabase, применить миграции `001 → 006` в SQL Editor.
 2. Установить Supabase CLI, `supabase login`, `supabase link --project-ref <ref>`.
 3. Задать секреты (Edge Functions → Secrets) по `.env.example`:
    `AI_PROVIDER=groq`, `GROQ_API_KEY`, `TELEGRAM_BOT_TOKEN`, `SUPABASE_JWT_SECRET`,

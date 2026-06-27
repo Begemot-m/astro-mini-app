@@ -120,6 +120,15 @@ Deno.serve(handler(async (req) => {
     .eq("user_id", userId)
     .maybeSingle();
 
+  // Последние ответы Вселенной для архива (платная ценность — история).
+  const { data: history } = await admin
+    .from("answer_history")
+    .select("id, question, title, summary, created_at")
+    .eq("user_id", userId)
+    .eq("kind", "universe_answer")
+    .order("created_at", { ascending: false })
+    .limit(10);
+
   // 3. Выпустить JWT, подписанный секретом проекта (его принимают и RLS, и наши функции).
   const now = Math.floor(Date.now() / 1000);
   const token = await new SignJWT({ role: "authenticated", aud: "authenticated" })
@@ -137,5 +146,6 @@ Deno.serve(handler(async (req) => {
     questions_left: questionsLeft,
     questions_limit: limit,
     chart: chartRow?.chart_json ?? null,
+    history: history ?? [],
   });
 }));

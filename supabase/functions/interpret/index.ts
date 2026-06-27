@@ -91,5 +91,18 @@ Deno.serve(handler(async (req) => {
     if (error) console.error("store interpretation failed:", error);
   });
 
+  // История ответов Вселенной (платная фича): отдельная запись на каждый вопрос.
+  if (task === "universe_answer") {
+    await admin.from("answer_history").insert({
+      user_id: user.id,
+      kind: task,
+      question: question || null,
+      title: result.title,
+      summary: result.summary,
+    }).then(({ error }) => {
+      if (error) console.error("store answer_history failed:", error);
+    });
+  }
+
   return json(req, { ...result, is_plus: isPlus });
 }));

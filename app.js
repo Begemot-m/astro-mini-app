@@ -274,6 +274,8 @@ $("#ask-button").addEventListener("click", () => {
     .then(data => {
       renderAnswer(data); $("#answer-source").textContent = "AI · ответ сегодня"; reveal(); showToast("Ответ AI сохранён в истории");
       entitlement.questionsLeft = Math.max(0, entitlement.questionsLeft - 1); applyEntitlement();
+      answerHistory.unshift({ question: userQuestion, title: data.title, summary: data.summary, created_at: new Date().toISOString() });
+      renderHistory();
     })
     .catch(err => {
       if (err.message === "quota") {
@@ -315,6 +317,32 @@ $$("[data-link]").forEach(button => button.addEventListener("click", () => {
 }));
 
 const entitlement = { isPlus: false, questionsLeft: 3, questionsLimit: 3 };
+let answerHistory = [];
+
+function formatHistDate(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+}
+
+function renderHistory() {
+  const list = $("#history-list");
+  if (!list || !answerHistory.length) return; // нет истории — оставляем демо-карточки
+  list.innerHTML = answerHistory.map((it, i) =>
+    `<button class="history-card" data-hist="${i}"><span>${formatHistDate(it.created_at)}</span><strong>${escapeHtml(it.question || it.title || "Ответ Вселенной")}</strong><small>${escapeHtml((it.summary || "").slice(0, 90))}…</small><i data-lucide="chevron-right"></i></button>`
+  ).join("");
+  const count = $("#history-count");
+  if (count) count.textContent = `${answerHistory.length} всего`;
+  list.querySelectorAll("[data-hist]").forEach(btn => btn.addEventListener("click", () => {
+    const it = answerHistory[Number(btn.dataset.hist)];
+    renderAnswer({ title: it.title, summary: it.summary, sections: [] });
+    $("#answer-card").classList.add("show");
+    $("#answer-source").textContent = `Из истории · ${formatHistDate(it.created_at)}`;
+    setTimeout(() => $("#answer-card").scrollIntoView({ behavior: "smooth", block: "center" }), 120);
+    icons(); haptic("soft");
+  }));
+  icons();
+}
 
 function applyEntitlement() {
   document.body.classList.toggle("is-plus", entitlement.isPlus);
@@ -348,6 +376,7 @@ async function authenticate() {
       localStorage.setItem("astro_chart_json", JSON.stringify(data.chart));
       applySavedChart();
     }
+    if (Array.isArray(data.history)) { answerHistory = data.history; renderHistory(); }
   } catch (_) {
     showToast("Не удалось авторизоваться — показаны демо-данные");
   }
