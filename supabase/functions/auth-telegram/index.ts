@@ -52,7 +52,7 @@ async function validateInitData(initData: string, botToken: string): Promise<TgU
 
 Deno.serve(handler(async (req) => {
   const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
-  const jwtSecret = Deno.env.get("SUPABASE_JWT_SECRET");
+  const jwtSecret = Deno.env.get("APP_JWT_SECRET");
   if (!botToken || !jwtSecret) throw new HttpError(500, "Auth is not configured");
 
   const { init_data } = await readJson<{ init_data?: string }>(req);

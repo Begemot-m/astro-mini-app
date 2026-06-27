@@ -78,7 +78,7 @@ export async function requireUser(
   if (!authHeader.startsWith("Bearer ")) throw new HttpError(401, "Unauthorized");
   const token = authHeader.slice("Bearer ".length).trim();
 
-  const jwtSecret = Deno.env.get("SUPABASE_JWT_SECRET");
+  const jwtSecret = Deno.env.get("APP_JWT_SECRET");
   if (!jwtSecret) throw new HttpError(500, "Auth is not configured");
 
   let userId: string;

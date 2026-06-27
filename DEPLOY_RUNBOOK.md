@@ -36,7 +36,7 @@ git push origin main
 1. Создать проект Supabase, применить миграции `001 → 006` в SQL Editor.
 2. Установить Supabase CLI, `supabase login`, `supabase link --project-ref <ref>`.
 3. Задать секреты (Edge Functions → Secrets) по `.env.example`:
-   `AI_PROVIDER=groq`, `GROQ_API_KEY`, `TELEGRAM_BOT_TOKEN`, `SUPABASE_JWT_SECRET`,
+   `AI_PROVIDER=groq`, `GROQ_API_KEY`, `TELEGRAM_BOT_TOKEN`, `APP_JWT_SECRET`,
    `APP_ORIGIN`, лимиты, и (для оплаты позже) ключи ЮKassa.
 4. Задеплоить функции:
    ```

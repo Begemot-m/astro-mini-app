@@ -37,7 +37,7 @@ GROQ_MODEL=llama-3.3-70b-versatile
 FREE_QUESTIONS_PER_MONTH=3
 PLUS_QUESTIONS_PER_MONTH=10
 TELEGRAM_BOT_TOKEN=<токен из шага 3>
-SUPABASE_JWT_SECRET=<JWT Secret из шага 2>
+APP_JWT_SECRET=<JWT Secret из шага 2>
 SUPABASE_URL=<Project URL>
 SUPABASE_ANON_KEY=<anon public>
 SUPABASE_SERVICE_ROLE_KEY=<service_role>
@@ -90,7 +90,7 @@ supabase functions deploy interpret
 
 ## Если что-то не работает
 
-- **Всегда демо-ответ / 401** — не задан `SUPABASE_JWT_SECRET`, либо `authApiUrl` пустой,
+- **Всегда демо-ответ / 401** — не задан `APP_JWT_SECRET`, либо `authApiUrl` пустой,
   либо токен бота в секрете не совпадает с ботом, через который открыли приложение.
 - **«AI временно недоступен»** — проверьте `GROQ_API_KEY` и лимиты Groq в консоли.
 - **Логи**: Supabase → Edge Functions → выбрать функцию → Logs. Там видно реальную причину.
