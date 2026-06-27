@@ -57,12 +57,12 @@ git push origin main
 
 ```js
 window.ASTRO_CONFIG = {
-  authApiUrl: "https://<ref>.functions.supabase.co/auth-telegram",
-  interpretationApiUrl: "https://<ref>.functions.supabase.co/interpret",
-  saveChartApiUrl: "https://<ref>.functions.supabase.co/save-chart",
-  chartCalcApiUrl: "https://<ref>.functions.supabase.co/chart-calc",
-  paymentApiUrl: "https://<ref>.functions.supabase.co/create-payment",
-  cancelApiUrl: "https://<ref>.functions.supabase.co/cancel-subscription",
+  authApiUrl: "https://<ref>.supabase.co/functions/v1/auth-telegram",
+  interpretationApiUrl: "https://<ref>.supabase.co/functions/v1/interpret",
+  saveChartApiUrl: "https://<ref>.supabase.co/functions/v1/save-chart",
+  chartCalcApiUrl: "https://<ref>.supabase.co/functions/v1/chart-calc",
+  paymentApiUrl: "https://<ref>.supabase.co/functions/v1/create-payment",
+  cancelApiUrl: "https://<ref>.supabase.co/functions/v1/cancel-subscription",
   environment: "live"
 };
 ```

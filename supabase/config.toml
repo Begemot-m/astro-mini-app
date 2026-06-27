@@ -1,0 +1,29 @@
+project_id = "astro-mini-app"
+
+# Все функции делают собственную проверку доступа (требуется для auth-telegram,
+# который вызывается без токена; остальные проверяют наш JWT сами через requireUser).
+# Поэтому отключаем платформенную проверку verify_jwt.
+
+[functions.auth-telegram]
+verify_jwt = false
+
+[functions.interpret]
+verify_jwt = false
+
+[functions.save-chart]
+verify_jwt = false
+
+[functions.chart-calc]
+verify_jwt = false
+
+[functions.create-payment]
+verify_jwt = false
+
+[functions.cancel-subscription]
+verify_jwt = false
+
+[functions.yookassa-webhook]
+verify_jwt = false
+
+[functions.renew-subscriptions]
+verify_jwt = false

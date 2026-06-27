@@ -61,15 +61,16 @@ supabase functions deploy interpret
 (`create-payment`, `yookassa-webhook`, `cancel-subscription`, `renew-subscriptions`,
 `chart-calc` для теста с AI деплоить НЕ обязательно — они про оплату/расчёт.)
 
-После деплоя скопируйте URL функций — они вида
-`https://<ref>.functions.supabase.co/auth-telegram` и `.../interpret`.
+После деплоя URL функций имеют вид
+`https://<ref>.supabase.co/functions/v1/auth-telegram` и `.../interpret`.
 
 ## Шаг 6. Привязка фронта и публикация
 
 1. В `config.js` впишите:
    ```js
-   authApiUrl: "https://<ref>.functions.supabase.co/auth-telegram",
-   interpretationApiUrl: "https://<ref>.functions.supabase.co/interpret",
+   authApiUrl: "https://<ref>.supabase.co/functions/v1/auth-telegram",
+   interpretationApiUrl: "https://<ref>.supabase.co/functions/v1/interpret",
+   saveChartApiUrl: "https://<ref>.supabase.co/functions/v1/save-chart",
    environment: "live"
    ```
 2. Запушьте проект в GitHub (ветка `main`) — GitHub Pages опубликует его автоматически
