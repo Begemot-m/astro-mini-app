@@ -42,6 +42,7 @@ git push origin main
    ```
    supabase functions deploy auth-telegram
    supabase functions deploy interpret
+   supabase functions deploy save-chart
    supabase functions deploy create-payment
    supabase functions deploy yookassa-webhook
    supabase functions deploy cancel-subscription
@@ -58,7 +59,9 @@ git push origin main
 window.ASTRO_CONFIG = {
   authApiUrl: "https://<ref>.functions.supabase.co/auth-telegram",
   interpretationApiUrl: "https://<ref>.functions.supabase.co/interpret",
+  saveChartApiUrl: "https://<ref>.functions.supabase.co/save-chart",
   paymentApiUrl: "https://<ref>.functions.supabase.co/create-payment",
+  cancelApiUrl: "https://<ref>.functions.supabase.co/cancel-subscription",
   environment: "live"
 };
 ```
