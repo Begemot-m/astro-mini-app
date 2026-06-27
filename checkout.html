@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Астро+ — оформление подписки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="checkout.css">
+</head>
+<body>
+  <main class="checkout">
+    <header><a href="index.html">астро<span>.</span></a><b>Защищённая оплата</b></header>
+    <section class="checkout-card">
+      <div class="checkout-mark">+</div>
+      <p class="eyebrow">Астро+ · подписка</p>
+      <h1>Больше ясности<br>каждые 30 дней</h1>
+      <p class="intro">Вы переходите на самостоятельную веб-версию сервиса. Оплата и чек обрабатываются ЮKassa.</p>
+      <div class="order">
+        <div><span>Подписка Астро+</span><strong>299 ₽</strong></div>
+        <small>Автоматическое списание каждые 30 дней. Отключить автопродление можно в профиле до следующего списания.</small>
+      </div>
+      <label><span>Email для чека</span><input type="email" id="receipt-email" placeholder="name@example.ru"></label>
+      <label class="agreement"><input type="checkbox" id="checkout-agreement"><span>Я принимаю <a href="legal/offer.html">оферту</a>, <a href="legal/refund.html">условия возврата и отмены</a>, <a href="legal/privacy.html">политику данных</a> и согласен на регулярные списания 299 ₽ каждые 30 дней.</span></label>
+      <button id="checkout-pay">Оплатить 299 ₽ через ЮKassa</button>
+      <p class="demo-note">В демо-версии платёж не списывается. После настройки backend кнопка перенаправит на настоящий `confirmation_url` ЮKassa.</p>
+    </section>
+  </main>
+  <div class="checkout-toast" id="checkout-toast"></div>
+  <script src="checkout.js"></script>
+</body>
+</html>

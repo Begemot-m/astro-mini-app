@@ -1,0 +1,14 @@
+# Секреты — никогда не коммитим
+.env
+.env.local
+*.key
+
+# Supabase локальные артефакты
+supabase/.branches
+supabase/.temp
+.supabase
+
+# Системное
+node_modules/
+.DS_Store
+Thumbs.db
