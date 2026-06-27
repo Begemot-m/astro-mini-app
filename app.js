@@ -146,6 +146,53 @@ function renderNatalChart(timeUnknown = false) {
   add("text",{x:180,y:188,class:"chart-center-sub"},timeUnknown ? "карта без домов" : "структурная схема");
 }
 
+const PLANET_GLYPH = { sun:"☉", moon:"☽", mercury:"☿", venus:"♀", mars:"♂", jupiter:"♃", saturn:"♄", uranus:"♅", neptune:"♆", pluto:"♇", north_node:"☊" };
+
+// Рисует круг карты из реальных данных расчёта (угол = долгота). Fallback на демо.
+function renderRealChart(chart) {
+  const svg = $("#natal-chart"); if (!svg) return;
+  const planets = Array.isArray(chart?.planets) ? chart.planets : null;
+  if (!planets) { renderNatalChart(!!chart?.birth?.time_unknown); return; }
+  svg.innerHTML = "";
+  const NS = "http://www.w3.org/2000/svg";
+  const add = (tag, attrs = {}, text = "") => {
+    const node = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+    if (text) node.textContent = text;
+    svg.appendChild(node); return node;
+  };
+  const pol = (r, a) => { const rad = (a - 90) * Math.PI / 180; return { x: 180 + r * Math.cos(rad), y: 180 + r * Math.sin(rad) }; };
+  const line = (A, B, cls) => add("line", { x1: A.x, y1: A.y, x2: B.x, y2: B.y, class: cls });
+  const zodiac = ["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"];
+  add("circle", { cx:180, cy:180, r:166, class:"chart-ring" });
+  add("circle", { cx:180, cy:180, r:139, class:"chart-ring soft" });
+  add("circle", { cx:180, cy:180, r:105, class:"chart-ring" });
+  add("circle", { cx:180, cy:180, r:73, class:"chart-ring soft" });
+  for (let i = 0; i < 12; i++) {
+    line(pol(139, i*30), pol(166, i*30), "zodiac-line");
+    const l = pol(153, i*30 + 15); add("text", { x:l.x, y:l.y, class:"zodiac-label" }, zodiac[i]);
+  }
+  const cusps = Array.isArray(chart.house_cusps) && chart.house_cusps.length === 12 ? chart.house_cusps : null;
+  if (cusps) {
+    cusps.forEach((cuspLon, idx) => {
+      const axis = idx === 0 || idx === 3 || idx === 6 || idx === 9;
+      line(pol(73, cuspLon), pol(139, cuspLon), axis ? "axis-line" : "house-line");
+    });
+    [["ASC", cusps[0]], ["IC", cusps[3]], ["DSC", cusps[6]], ["MC", cusps[9]]].forEach(([label, lon]) => {
+      const p = pol(145, lon); add("text", { x:p.x, y:p.y, class:"axis-label" }, label);
+    });
+  }
+  planets.forEach(pl => {
+    const p = pol(119, pl.lon);
+    add("circle", { cx:p.x, cy:p.y, r:9, class:`planet-node${pl.key === "sun" ? " accent" : ""}` });
+    add("text", { x:p.x, y:p.y + .5, class:"planet-symbol" }, PLANET_GLYPH[pl.key] || "•");
+    const d = pol(133, pl.lon); add("text", { x:d.x, y:d.y, class:"planet-degree" }, `${Math.round(pl.degree)}°`);
+  });
+  add("circle", { cx:180, cy:180, r:38, class:"chart-center" });
+  add("text", { x:180, y:177, class:"chart-center-title" }, String(chart.birth?.place || "").split(",")[0].slice(0, 14));
+  add("text", { x:180, y:188, class:"chart-center-sub" }, cusps ? "Плацидус" : "карта без домов");
+}
+
 function setupOnboarding() {
   const onboarding = $("#onboarding"); if (!onboarding) return;
   let slide = 0;
@@ -414,6 +461,7 @@ async function computeChart(birth) {
     if (!realChart || !Array.isArray(realChart.planets)) return;
     localStorage.setItem("astro_chart_json", JSON.stringify(realChart));
     saveChartToBackend(realChart); // в realChart есть поле birth
+    renderRealChart(realChart);    // перерисовать круг под реальный расчёт
     showToast("Карта рассчитана по Swiss Ephemeris ✨");
   } catch (_) {}
 }
@@ -431,7 +479,8 @@ function applySavedChart() {
   if (meta && c.birth.place) meta.innerHTML = c.birth.time_unknown
     ? `${c.birth.place} · ${formatted}<br>Время неизвестно · карта без домов`
     : `${c.birth.place} · ${formatted}${c.birth.time ? " · " + c.birth.time : ""}<br>Система домов: Плацидус`;
-  renderNatalChart(!!c.birth.time_unknown);
+  // Если карта реальная (есть планеты) — рисуем её; иначе демо-схема.
+  if (Array.isArray(c.planets)) renderRealChart(c); else renderNatalChart(!!c.birth.time_unknown);
   return true;
 }
 
