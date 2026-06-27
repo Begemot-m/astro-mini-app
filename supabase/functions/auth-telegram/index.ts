@@ -113,6 +113,13 @@ Deno.serve(handler(async (req) => {
     .maybeSingle();
   const questionsLeft = Math.max(0, limit - (usage?.used ?? 0));
 
+  // Сохранённая карта — чтобы вернувшийся пользователь не вводил данные заново.
+  const { data: chartRow } = await admin
+    .from("charts")
+    .select("chart_json")
+    .eq("user_id", userId)
+    .maybeSingle();
+
   // 3. Выпустить JWT, подписанный секретом проекта (его принимают и RLS, и наши функции).
   const now = Math.floor(Date.now() / 1000);
   const token = await new SignJWT({ role: "authenticated", aud: "authenticated" })
@@ -129,5 +136,6 @@ Deno.serve(handler(async (req) => {
     is_plus: isPlus,
     questions_left: questionsLeft,
     questions_limit: limit,
+    chart: chartRow?.chart_json ?? null,
   });
 }));

@@ -62,7 +62,30 @@ function showDetail(key) {
   const [icon, title, label, copy, rows] = item;
   $("#sheet-content").innerHTML = `<div class="detail-hero"><i data-lucide="${icon}"></i></div><p class="eyebrow">${label}</p><h2>${title}</h2><p>${copy}</p><div class="detail-list">${rows.map(row => `<div><span>${row[0]}</span><strong>${row[1]}</strong></div>`).join("")}</div><button class="primary" data-sheet-done>Понятно</button>`;
   openSheet(detailSheet);
+  if (key === "subscription-management" && entitlement.isPlus && window.ASTRO_CONFIG?.cancelApiUrl) {
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "secondary";
+    cancelBtn.textContent = "Отключить автопродление";
+    cancelBtn.onclick = () => cancelSubscription(cancelBtn);
+    $("[data-sheet-done]").insertAdjacentElement("beforebegin", cancelBtn);
+  }
   $("[data-sheet-done]").onclick = () => closeSheet(detailSheet);
+}
+
+async function cancelSubscription(btn) {
+  const endpoint = window.ASTRO_CONFIG?.cancelApiUrl;
+  const token = localStorage.getItem("astro_access_token");
+  if (!endpoint || !token) { showToast("Доступно после подключения backend"); return; }
+  btn.disabled = true; btn.textContent = "Отключаем…";
+  try {
+    const r = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } });
+    if (!r.ok) throw new Error("cancel");
+    showToast("Автопродление отключено. Доступ сохранится до конца оплаченного периода.");
+    btn.textContent = "Автопродление отключено";
+  } catch (_) {
+    showToast("Не удалось отключить — попробуйте позже");
+    btn.disabled = false; btn.textContent = "Отключить автопродление";
+  }
 }
 
 function polar(cx, cy, radius, angle) {
@@ -194,6 +217,7 @@ function setupBirthFlow() {
       note: "Базовые данные рождения. Полный расчёт Swiss Ephemeris подключается на backend (chart-calc).",
     };
     localStorage.setItem("astro_chart_json", JSON.stringify(chartJson));
+    saveChartToBackend(chartJson);
     $("#birth-setup").classList.remove("open");
     showToast("Данные сохранены. В production здесь запустится расчёт Swiss Ephemeris.");
   });
@@ -319,10 +343,45 @@ async function authenticate() {
     entitlement.isPlus = data.is_plus === true;
     if (Number.isInteger(data.questions_left)) entitlement.questionsLeft = data.questions_left;
     if (Number.isInteger(data.questions_limit)) entitlement.questionsLimit = data.questions_limit;
+    // Кросс-девайс: если на бэке есть карта, а локально нет — восстанавливаем.
+    if (data.chart && !localStorage.getItem("astro_chart_json")) {
+      localStorage.setItem("astro_chart_json", JSON.stringify(data.chart));
+      applySavedChart();
+    }
   } catch (_) {
     showToast("Не удалось авторизоваться — показаны демо-данные");
   }
   applyEntitlement();
+}
+
+async function saveChartToBackend(chartJson) {
+  const endpoint = window.ASTRO_CONFIG?.saveChartApiUrl;
+  const token = localStorage.getItem("astro_access_token");
+  if (!endpoint || !token || !chartJson?.birth) return;
+  try {
+    await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ birth: chartJson.birth, chart: chartJson }),
+    });
+  } catch (_) {}
+}
+
+// Восстанавливает интерфейс по сохранённой карте: убирает онбординг, заполняет мету.
+function applySavedChart() {
+  const raw = localStorage.getItem("astro_chart_json");
+  if (!raw) return false;
+  let c; try { c = JSON.parse(raw); } catch { return false; }
+  if (!c || !c.birth) return false;
+  const onboarding = $("#onboarding"); if (onboarding) onboarding.remove();
+  const d = new Date(`${c.birth.date}T12:00:00`);
+  const formatted = Number.isNaN(d.getTime()) ? (c.birth.date || "") : d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+  const meta = $("#chart-meta");
+  if (meta && c.birth.place) meta.innerHTML = c.birth.time_unknown
+    ? `${c.birth.place} · ${formatted}<br>Время неизвестно · карта без домов`
+    : `${c.birth.place} · ${formatted}${c.birth.time ? " · " + c.birth.time : ""}<br>Система домов: Плацидус`;
+  renderNatalChart(!!c.birth.time_unknown);
+  return true;
 }
 
 if (tg) {
@@ -333,5 +392,6 @@ if (tg) {
 }
 icons();
 renderNatalChart();
-setupOnboarding();
+const hasSavedChart = applySavedChart();
+if (!hasSavedChart) setupOnboarding(); // онбординг только для новых пользователей
 setupBirthFlow();
