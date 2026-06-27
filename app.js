@@ -218,6 +218,7 @@ function setupBirthFlow() {
     };
     localStorage.setItem("astro_chart_json", JSON.stringify(chartJson));
     saveChartToBackend(chartJson);
+    computeChart(chartJson.birth); // апгрейд до реальной карты, если chart-calc подключён
     $("#birth-setup").classList.remove("open");
     showToast("Данные сохранены. В production здесь запустится расчёт Swiss Ephemeris.");
   });
@@ -393,6 +394,27 @@ async function saveChartToBackend(chartJson) {
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
       body: JSON.stringify({ birth: chartJson.birth, chart: chartJson }),
     });
+  } catch (_) {}
+}
+
+// Реальный расчёт Swiss Ephemeris через Edge Function chart-calc.
+// Тихий fallback: если сервис не подключён или ошибка — остаётся базовая карта.
+async function computeChart(birth) {
+  const endpoint = window.ASTRO_CONFIG?.chartCalcApiUrl;
+  const token = localStorage.getItem("astro_access_token");
+  if (!endpoint || !token || !birth?.date) return;
+  try {
+    const r = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify(birth),
+    });
+    if (!r.ok) return;
+    const realChart = await r.json();
+    if (!realChart || !Array.isArray(realChart.planets)) return;
+    localStorage.setItem("astro_chart_json", JSON.stringify(realChart));
+    saveChartToBackend(realChart); // в realChart есть поле birth
+    showToast("Карта рассчитана по Swiss Ephemeris ✨");
   } catch (_) {}
 }
 

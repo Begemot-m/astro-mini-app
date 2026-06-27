@@ -5,6 +5,8 @@ window.ASTRO_CONFIG = {
   interpretationApiUrl: "",
   // URL функции save-chart: сохраняет данные рождения и карту в Supabase.
   saveChartApiUrl: "",
+  // URL функции chart-calc: реальный расчёт Swiss Ephemeris (иначе — базовая карта).
+  chartCalcApiUrl: "",
   // URL функции create-payment для реального checkout ЮKassa.
   paymentApiUrl: "",
   // URL функции cancel-subscription: отключение автопродления.

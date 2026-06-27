@@ -60,6 +60,7 @@ window.ASTRO_CONFIG = {
   authApiUrl: "https://<ref>.functions.supabase.co/auth-telegram",
   interpretationApiUrl: "https://<ref>.functions.supabase.co/interpret",
   saveChartApiUrl: "https://<ref>.functions.supabase.co/save-chart",
+  chartCalcApiUrl: "https://<ref>.functions.supabase.co/chart-calc",
   paymentApiUrl: "https://<ref>.functions.supabase.co/create-payment",
   cancelApiUrl: "https://<ref>.functions.supabase.co/cancel-subscription",
   environment: "live"
@@ -75,6 +76,16 @@ git push origin main
 ```
 
 ---
+
+## Часть 3.5. (Опционально) Реальный расчёт карты
+
+Пока не подключён — планеты демонстрационные. Чтобы карта стала настоящей:
+1. Задеплоить сервис из папки `chart-service/` на Railway или Fly (см. `chart-service/README.md`).
+2. В секретах Supabase задать `CHART_CALC_URL` и `CHART_CALC_TOKEN`.
+3. Задеплоить `supabase functions deploy chart-calc`.
+4. В `config.js` уже есть `chartCalcApiUrl` — фронт сам подхватит реальную карту.
+
+Без этого шага всё работает в режиме базовой карты (дата + знак Солнца) — безопасный fallback.
 
 ## Часть 4. Telegram и проверка
 
