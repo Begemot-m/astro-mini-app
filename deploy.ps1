@@ -19,7 +19,9 @@ if (git status --porcelain) {
 
 Write-Host ""
 Write-Host "=== 2/3  git push (frontend) ===" -ForegroundColor Cyan
-git push origin main
+# Local repo is the single source of truth. --force overwrites the remote so manual
+# web uploads / divergence never block the push.
+git push origin main --force
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  PUSH FAILED. Is VPN on? GitHub may be blocked by ISP." -ForegroundColor Red
     $ok = $false
