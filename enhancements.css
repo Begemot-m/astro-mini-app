@@ -20,6 +20,8 @@ ul.paywall-benefits li b{display:block;font-size:11.5px;margin-bottom:1px;color:
 #questions-left.counter-empty{color:var(--accent);font-weight:600}
 body.is-plus .inline-paywall{display:none}
 body.is-plus .week-card>button[data-paywall]{opacity:.4}
+.portrait-cta{margin-top:22px}
+body.is-plus .portrait-cta{display:none}
 /* Тизер: первый абзац виден, продолжение мягко размыто + CTA поверх */
 .locked-teaser{position:relative;margin-top:8px}
 .locked-teaser .locked-body{filter:blur(4px);opacity:.5;user-select:none;max-height:62px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 30%,transparent);mask-image:linear-gradient(#000 30%,transparent)}

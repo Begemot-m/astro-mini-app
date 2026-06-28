@@ -527,16 +527,12 @@ function renderPortrait(d) {
     const full = escapeHtml(s.full || "");
     const fullBlock = d.is_plus
       ? `<p>${full}</p>`
-      : `<div class="locked-teaser"><div class="locked-body"><p>${full}</p></div><div class="locked-cta"><button class="inline-paywall" data-paywall="${heading}">Подробнее в Астро+</button></div></div>`;
+      : `<div class="locked-teaser"><div class="locked-body"><p>${full}</p></div></div>`;
     return `<button class="accordion-head open">${heading} <span>−</span></button><div class="accordion-body open"><p>${teaser}</p>${fullBlock}</div>`;
   }).join("");
   $$(".accordion-head", acc).forEach(head => head.addEventListener("click", () => {
     const body = head.nextElementSibling; const open = body.classList.toggle("open");
     head.classList.toggle("open", open); const sp = $("span", head); if (sp) sp.textContent = open ? "−" : "+"; haptic("soft");
-  }));
-  $$("[data-paywall]", acc).forEach(b => b.addEventListener("click", () => {
-    if (entitlement.isPlus) { showToast("Уже открыто в Астро+"); return; }
-    paywallTitle.textContent = `Откройте: ${b.dataset.paywall}`; openSheet(paywall);
   }));
   if (d.summary) {
     const rc = $(".recognition-card");
@@ -607,17 +603,19 @@ function pluralDays(n) {
   if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return "дня";
   return "дней";
 }
-// Реальный счётчик дней подряд + интенсивность пламени.
+// Реальный счётчик дней подряд + интенсивность пламени. Дата — ЛОКАЛЬНАЯ.
+const localDay = (d = new Date()) => d.toLocaleDateString("en-CA"); // YYYY-MM-DD в местном времени
 function computeStreak() {
   const btn = $(".streak"); if (!btn) return;
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const today = localDay();
   const last = localStorage.getItem("astro_streak_date");
   let streak = parseInt(localStorage.getItem("astro_streak") || "0", 10) || 0;
-  if (last !== todayStr) {
+  if (last !== today) {
     const y = new Date(); y.setDate(y.getDate() - 1);
-    streak = (last === y.toISOString().slice(0, 10)) ? streak + 1 : 1;
+    if (last === localDay(y)) streak += 1;   // вчера заходил → +1
+    else streak = 1;                          // пропуск или первый раз → 1
     localStorage.setItem("astro_streak", String(streak));
-    localStorage.setItem("astro_streak_date", todayStr);
+    localStorage.setItem("astro_streak_date", today);
   }
   if (streak < 1) streak = 1;
   btn.innerHTML = `<i data-lucide="flame"></i> ${streak} ${pluralDays(streak)} подряд`;
@@ -625,24 +623,13 @@ function computeStreak() {
   icons();
 }
 
-// Раскрывает все разделы портрета и добавляет платный CTA там, где его нет.
+// Раскрывает все разделы портрета (платный CTA — один внизу страницы).
 function enhancePortrait() {
   $$("#chart .accordion-head").forEach(head => {
     const body = head.nextElementSibling;
     if (!body || !body.classList.contains("accordion-body")) return;
     body.classList.add("open"); head.classList.add("open");
     const span = $("span", head); if (span) span.textContent = "−";
-    if (!body.querySelector(".inline-paywall") && !body.querySelector(".locked-teaser")) {
-      const cta = document.createElement("button");
-      cta.className = "inline-paywall";
-      cta.textContent = "Подробнее в Астро+";
-      cta.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (entitlement.isPlus) { showToast("Уже открыто в Астро+"); return; }
-        paywallTitle.textContent = "Откройте: подробный разбор"; openSheet(paywall);
-      });
-      body.appendChild(cta);
-    }
   });
 }
 
@@ -828,6 +815,49 @@ async function computeChart(birth) {
 }
 
 // Восстанавливает интерфейс по сохранённой карте: убирает онбординг, заполняет мету.
+const ZODIAC_SIGNS = ["Овен","Телец","Близнецы","Рак","Лев","Дева","Весы","Скорпион","Стрелец","Козерог","Водолей","Рыбы"];
+
+// Честный круг без точного расчёта: зодиак + Солнце в своём знаке.
+function renderBasicChart(c) {
+  const svg = $("#natal-chart"); if (!svg) return;
+  const idx = ZODIAC_SIGNS.indexOf(c && c.sun_sign);
+  if (idx < 0) { renderNatalChart(!!(c && c.birth && c.birth.time_unknown)); return; }
+  svg.innerHTML = "";
+  const NS = "http://www.w3.org/2000/svg";
+  const add = (tag, attrs = {}, text = "") => { const n = document.createElementNS(NS, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v)); if (text) n.textContent = text; svg.appendChild(n); return n; };
+  const pol = (r, a) => { const rad = (a - 90) * Math.PI / 180; return { x: 180 + r * Math.cos(rad), y: 180 + r * Math.sin(rad) }; };
+  const line = (A, B, cls) => add("line", { x1: A.x, y1: A.y, x2: B.x, y2: B.y, class: cls });
+  const zodiac = ["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"];
+  add("circle", { cx: 180, cy: 180, r: 166, class: "chart-ring" });
+  add("circle", { cx: 180, cy: 180, r: 139, class: "chart-ring soft" });
+  add("circle", { cx: 180, cy: 180, r: 105, class: "chart-ring" });
+  for (let i = 0; i < 12; i++) { line(pol(139, i * 30), pol(166, i * 30), "zodiac-line"); const l = pol(153, i * 30 + 15); add("text", { x: l.x, y: l.y, class: "zodiac-label" }, zodiac[i]); }
+  const ang = idx * 30 + 15;
+  const p = pol(119, ang);
+  add("circle", { cx: p.x, cy: p.y, r: 11, class: "planet-node accent" });
+  add("text", { x: p.x, y: p.y + .5, class: "planet-symbol" }, "☉");
+  add("circle", { cx: 180, cy: 180, r: 38, class: "chart-center" });
+  add("text", { x: 180, y: 177, class: "chart-center-title" }, String((c.birth && c.birth.place) || "").split(",")[0].slice(0, 14));
+  add("text", { x: 180, y: 188, class: "chart-center-sub" }, "ядро карты");
+}
+
+// Без точного расчёта показываем честно только Солнце; остальное — после chart-service.
+function updatePositionsBasic(sign) {
+  const list = $(".positions-list");
+  if (list) {
+    const sunSmall = list.querySelector('[data-detail="sun"] small'); if (sunSmall) sunSmall.textContent = sign;
+    const sunEm = list.querySelector('[data-detail="sun"] em'); if (sunEm) sunEm.textContent = "";
+    list.querySelectorAll('[data-detail="moon"],[data-detail="mercury"],[data-detail="venus"],[data-detail="mars"]').forEach(b => b.style.display = "none");
+  }
+  const bt = $(".big-three");
+  if (bt) {
+    const sunStrong = bt.querySelector('[data-detail="sun"] strong'); if (sunStrong) sunStrong.textContent = sign;
+    const sunSmall = bt.querySelector('[data-detail="sun"] small'); if (sunSmall) sunSmall.textContent = "ваш знак Солнца";
+    bt.querySelectorAll('[data-detail="moon"],[data-detail="asc"]').forEach(b => b.style.display = "none");
+  }
+  const note = $("#positions-note"); if (note) note.textContent = "знак Солнца";
+}
+
 function applySavedChart() {
   const raw = localStorage.getItem("astro_chart_json");
   if (!raw) return false;
@@ -843,8 +873,10 @@ function applySavedChart() {
   const city = (c.birth.place || "").split(",")[0];
   const sub = $("#profile-sub"); if (sub) sub.textContent = city;
   const bs = $("#birth-summary"); if (bs) bs.textContent = `${formatted}${city ? " · " + city : ""}`;
-  // Если карта реальная (есть планеты) — рисуем её; иначе демо-схема.
-  if (Array.isArray(c.planets)) renderRealChart(c); else renderNatalChart(!!c.birth.time_unknown);
+  // Реальная карта (chart-service) → полный круг; иначе честный круг с Солнцем.
+  if (Array.isArray(c.planets)) renderRealChart(c);
+  else if (c.sun_sign) { renderBasicChart(c); updatePositionsBasic(c.sun_sign); }
+  else renderNatalChart(!!c.birth.time_unknown);
   return true;
 }
 

@@ -159,8 +159,7 @@
           <svg id="natal-chart" viewBox="0 0 360 360" role="img" aria-label="Натальная карта с домами, планетами и аспектами"></svg>
           <span class="chart-hint"><i data-lucide="move-up-right"></i> Нажмите, чтобы разобрать карту</span>
         </button>
-        <div class="chart-legend"><span><i class="aspect-line conjunction"></i> знаки</span><span><i class="aspect-line trine"></i> планеты</span><span><i class="aspect-line square"></i> дома при точном времени</span></div>
-        <div class="section-heading"><div><p class="eyebrow">Ваши данные</p><h2>Положения планет</h2></div><span>по вашей карте</span></div>
+        <div class="section-heading"><div><p class="eyebrow">Ваши данные</p><h2>Положения планет</h2></div><span id="positions-note">по вашей карте</span></div>
         <div class="positions-list">
           <button data-detail="sun"><span class="position-symbol">☉</span><span><b>Солнце</b><small>Близнецы · 21°08′</small></span><em>9 дом</em></button>
           <button data-detail="moon"><span class="position-symbol">☽</span><span><b>Луна</b><small>Скорпион · 04°32′</small></span><em>1 дом</em></button>
@@ -197,8 +196,9 @@
           <button class="accordion-head">Любовь и близость <span>+</span></button>
           <div class="accordion-body"><p>Сочетание воздушного Солнца и глубокой Луны может создавать два одновременных запроса: вам нужен живой, свободный диалог и при этом эмоциональная надёжность. Лёгкость без искренности быстро теряет ценность, а интенсивность без пространства начинает утомлять.</p><div class="locked-teaser"><div class="locked-body"><p>В близости полезно прямо проговаривать, когда вам нужен разговор, а когда — время переварить чувства в одиночестве. Полный разбор отношений AI составляет по всей структуре карты: совместимость, сценарии привязанности, периоды сближения и охлаждения.</p></div><div class="locked-cta"><button class="inline-paywall" data-paywall="Полный разбор отношений">Открыть полный разбор в Астро+</button></div></div></div>
           <button class="accordion-head">Деньги и реализация <span>+</span></button>
-          <div class="accordion-body"><p>Ваша сильная сторона в реализации — быстро понимать контекст, видеть несколько вариантов и находить точную формулировку. Это может быть полезно в работе с информацией, продуктами, обучением, коммуникациями и задачами на стыке областей.</p><div class="locked-teaser"><div class="locked-body"><p>Риск возникает, когда интерес к следующей идее появляется раньше, чем текущая получила форму. В Астро+ — разбор рабочего стиля, денежных сценариев, периодов роста дохода и того, какие форматы реализации подходят именно вашей карте.</p></div><div class="locked-cta"><button class="inline-paywall" data-paywall="Полный разбор реализации">Открыть полный разбор в Астро+</button></div></div></div>
+          <div class="accordion-body"><p>Ваша сильная сторона в реализации — быстро понимать контекст, видеть несколько вариантов и находить точную формулировку. Это может быть полезно в работе с информацией, продуктами, обучением, коммуникациями и задачами на стыке областей.</p></div>
         </div>
+        <button class="primary portrait-cta" id="portrait-cta" data-paywall="Полный разбор личности">Открыть подробный разбор в Астро+</button>
       </section>
 
       <section class="screen" id="universe">
