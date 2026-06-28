@@ -62,6 +62,20 @@ function showDetail(key) {
   const [icon, title, label, copy, rows] = item;
   $("#sheet-content").innerHTML = `<div class="detail-hero"><i data-lucide="${icon}"></i></div><p class="eyebrow">${label}</p><h2>${title}</h2><p>${copy}</p><div class="detail-list">${rows.map(row => `<div><span>${row[0]}</span><strong>${row[1]}</strong></div>`).join("")}</div><button class="primary" data-sheet-done>Понятно</button>`;
   openSheet(detailSheet);
+  if (key === "edit-profile") {
+    const field = document.createElement("label");
+    field.className = "field";
+    field.innerHTML = `<span>Ваше имя</span>`;
+    const input = document.createElement("input");
+    input.type = "text"; input.maxLength = 60; input.value = localStorage.getItem("astro_name") || "";
+    field.appendChild(input);
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "primary"; saveBtn.textContent = "Сохранить имя";
+    saveBtn.onclick = () => saveName(input.value);
+    const done = $("[data-sheet-done]");
+    done.insertAdjacentElement("beforebegin", field);
+    done.insertAdjacentElement("beforebegin", saveBtn);
+  }
   if (key === "subscription-management" && entitlement.isPlus && window.ASTRO_CONFIG?.cancelApiUrl) {
     const cancelBtn = document.createElement("button");
     cancelBtn.className = "secondary";
@@ -263,6 +277,8 @@ function setupBirthFlow() {
       houses_system: unknown.checked ? null : "Placidus",
       note: "Базовые данные рождения. Полный расчёт Swiss Ephemeris подключается на backend (chart-calc).",
     };
+    const nameVal = $("#birth-name") && $("#birth-name").value.trim();
+    if (nameVal) { localStorage.setItem("astro_name", nameVal); applyName(nameVal); }
     localStorage.setItem("astro_chart_json", JSON.stringify(chartJson));
     saveChartToBackend(chartJson);
     computeChart(chartJson.birth); // апгрейд до реальной карты, если chart-calc подключён
@@ -403,6 +419,90 @@ function applyEntitlement() {
   }
 }
 
+// --- Имя пользователя ---
+function applyName(name) {
+  if (!name) return;
+  $$(".profile-card strong").forEach(el => el.textContent = name);
+  const initials = name.trim().split(/\s+/).map(w => w[0] || "").slice(0, 2).join("").toUpperCase();
+  $$(".avatar").forEach(el => { if (!el.querySelector("img")) el.textContent = initials; });
+}
+
+async function saveName(name) {
+  name = (name || "").trim();
+  if (!name) { showToast("Введите имя"); return; }
+  localStorage.setItem("astro_name", name);
+  applyName(name);
+  const endpoint = window.ASTRO_CONFIG?.saveChartApiUrl;
+  const token = localStorage.getItem("astro_access_token");
+  if (endpoint && token) {
+    try {
+      await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ name }),
+      });
+    } catch (_) {}
+  }
+  showToast("Имя сохранено");
+  closeSheet(detailSheet);
+}
+
+// --- Ежедневный контент главной (прогноз, сферы, энергия, части дня, неделя) ---
+function renderDaily(d) {
+  if (!d) return;
+  if (d.energy) {
+    const card = $(".energy-card");
+    if (card) {
+      const eb = $(".eyebrow", card); if (eb && d.energy.percent) eb.textContent = `Энергия дня · ${d.energy.percent}%`;
+      const h = $("h2", card); if (h && d.energy.title) h.textContent = d.energy.title;
+      const ps = $$("p", card); const bodyP = ps[ps.length - 1]; if (bodyP && d.energy.body) bodyP.textContent = d.energy.body;
+    }
+  }
+  if (Array.isArray(d.dayparts)) {
+    const btns = $$(".day-meter button");
+    d.dayparts.forEach((dp, i) => {
+      const b = btns[i]; if (!b) return;
+      const s = $("strong", b); if (s && dp.title) s.textContent = dp.title;
+      const bar = $("i", b); if (bar && dp.level) bar.style.setProperty("--level", `${dp.level}%`);
+    });
+  }
+  if (d.forecast) {
+    const fc = $(".forecast-card");
+    if (fc) {
+      const p = $("p", fc); if (p && d.forecast.body) p.textContent = d.forecast.body;
+      const adv = fc.querySelector(".advice div");
+      if (adv && d.forecast.advice) adv.innerHTML = `<span>Совет дня</span>${escapeHtml(d.forecast.advice)}`;
+    }
+  }
+  (d.spheres || []).forEach(s => {
+    const card = document.querySelector(`.sphere-card[data-detail="${s.key}"]`);
+    if (!card) return;
+    const strong = $("strong", card); if (strong && s.title) strong.textContent = s.title;
+    const p = $("p", card); if (p && s.text) p.textContent = s.text;
+    const em = $("em", card); if (em && s.percent) em.textContent = `${s.percent}%`;
+  });
+  if (d.is_plus && d.week) {
+    const wc = $(".week-card");
+    if (wc) { const h = $("h3", wc); if (h && d.week.title) h.textContent = d.week.title; const p = wc.querySelector("div > p"); if (p && d.week.body) p.textContent = d.week.body; }
+  }
+}
+
+async function loadDailyContent() {
+  const endpoint = window.ASTRO_CONFIG?.dailyContentApiUrl;
+  const token = localStorage.getItem("astro_access_token");
+  if (!endpoint || !token) return;
+  try {
+    const chart = JSON.parse(localStorage.getItem("astro_chart_json") || "null");
+    const r = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ chart }),
+    });
+    if (!r.ok) return;
+    renderDaily(await r.json());
+  } catch (_) {}
+}
+
 async function authenticate() {
   const endpoint = window.ASTRO_CONFIG?.authApiUrl;
   const initData = tg?.initData;
@@ -425,6 +525,9 @@ async function authenticate() {
       applySavedChart();
     }
     if (Array.isArray(data.history)) { answerHistory = data.history; renderHistory(); }
+    if (data.display_name && !localStorage.getItem("astro_name")) localStorage.setItem("astro_name", data.display_name);
+    applyName(localStorage.getItem("astro_name") || data.display_name);
+    loadDailyContent();
   } catch (_) {
     showToast("Не удалось авторизоваться — показаны демо-данные");
   }
@@ -436,11 +539,15 @@ async function saveChartToBackend(chartJson) {
   const token = localStorage.getItem("astro_access_token");
   if (!endpoint || !token || !chartJson?.birth) return;
   try {
-    await fetch(endpoint, {
+    const r = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ birth: chartJson.birth, chart: chartJson }),
+      body: JSON.stringify({ birth: chartJson.birth, chart: chartJson, name: localStorage.getItem("astro_name") || undefined }),
     });
+    if (r.status === 429) {
+      const p = await r.json().catch(() => ({}));
+      showToast(p.message || "Данные рождения можно менять раз в неделю");
+    }
   } catch (_) {}
 }
 
@@ -493,5 +600,6 @@ if (tg) {
 icons();
 renderNatalChart();
 const hasSavedChart = applySavedChart();
+applyName(localStorage.getItem("astro_name"));
 if (!hasSavedChart) setupOnboarding(); // онбординг только для новых пользователей
 setupBirthFlow();

@@ -64,7 +64,7 @@ Deno.serve(handler(async (req) => {
   // 1. Найти существующий маппинг или создать пользователя Supabase.
   const { data: existing } = await admin
     .from("telegram_accounts")
-    .select("user_id")
+    .select("user_id, display_name")
     .eq("tg_id", tgUser.id)
     .maybeSingle();
 
@@ -147,5 +147,6 @@ Deno.serve(handler(async (req) => {
     questions_limit: limit,
     chart: chartRow?.chart_json ?? null,
     history: history ?? [],
+    display_name: existing?.display_name ?? tgUser.first_name ?? "",
   });
 }));
