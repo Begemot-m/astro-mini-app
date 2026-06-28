@@ -26,3 +26,11 @@ body.is-plus .week-card>button[data-paywall]{opacity:.4}
 .locked-teaser .locked-cta{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center}
 body.is-plus .locked-teaser .locked-body{filter:none;opacity:1;max-height:none;-webkit-mask-image:none;mask-image:none}
 body.is-plus .locked-teaser .locked-cta{display:none}
+
+/* iOS не зумит поля с font-size >= 16px */
+#question,.ask-card textarea,input[type="text"],input[type="email"],input[type="date"],input[type="time"]{font-size:16px}
+/* Кнопка обновления вверху: точка-индикатор «не обновлялось сегодня» */
+.refresh-btn{position:relative}
+.refresh-btn.stale::after{content:"";position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.refresh-btn.spinning svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}

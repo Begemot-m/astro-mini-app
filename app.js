@@ -22,7 +22,8 @@ const details = {
   "history-project": ["rocket", "Новый проект", "Ответ от 2 июня", "Период подходит для исследования и первого прототипа. Не обещайте себе большой запуск: сделайте маленькую версию, которую можно проверить.", [["Ориентир", "Тест до конца недели"], ["Транзит", "Меркурий тригон Юпитер"]]],
   birth: ["calendar-days", "Данные рождения", "Основа расчёта", "Эти данные используются для точного положения планет и домов. В реальном приложении изменение данных запустит новый расчёт карты.", [["Дата", "11 июня 1996"], ["Время", "08:40"], ["Место", "Москва, Россия"], ["Часовой пояс", "UTC+4 на дату рождения"]]],
   referral: ["users", "Пригласить друзей", "Дарите астро+", "За каждого друга, который оформит подписку, вы получите 7 дополнительных дней астро+. Ещё два приглашения откроют месяц бесплатно.", [["Приглашено", "1 из 3"], ["Ваша награда", "7 дней астро+"], ["Ссылка", "t.me/astro_demo_bot?start=ref_maria"]]],
-  about: ["info", "Об астро.", "Магия в современной упаковке", "астро. — развлекательно-рефлексивный продукт. Интерпретации помогают посмотреть на привычные ситуации с нового ракурса, но не заменяют профессиональные медицинские, юридические или финансовые рекомендации.", [["Версия", "Прототип 0.3"], ["Расчёт карты", "Swiss Ephemeris"], ["Интерпретация", "AI-разбор через backend"]]],
+  about: ["info", "Об астро.", "Магия в современной упаковке", "астро. — развлекательно-рефлексивный продукт. Интерпретации помогают посмотреть на привычные ситуации с нового ракурса, но не заменяют профессиональные медицинские, юридические или финансовые рекомендации.", [["Расчёт карты", "Swiss Ephemeris"], ["Интерпретация", "AI через backend"]]],
+  legal: ["shield-check", "Условия и конфиденциальность", "Правила и данные", "Сервис носит развлекательно-рефлексивный характер: материалы вероятностны, не являются диагнозом и не гарантируют событий. Для карты нужны дата, время и место рождения — они хранятся с вашего согласия, удаляются по запросу и не передаются AI в идентифицирующем виде.", [["Не является", "диагнозом или консультацией"], ["AI получает", "обезличенную структуру карты"], ["Контроль", "экспорт и удаление данных"], ["Полные документы", "site → legal/"]]],
   "edit-profile": ["user-round", "Профиль", "Данные Telegram", "В реальном Mini App имя и аватар загружаются из Telegram. Здесь показан демонстрационный пользователь.", [["Имя", "Мария К."], ["Username", "@maria_k"], ["Город", "Москва"]]],
   terms: ["file-text", "Условия использования", "Безопасная рамка", "астро. предоставляет персонализированные развлекательно-рефлексивные материалы. Интерпретации носят вероятностный характер, могут не совпадать с вашим опытом и не должны быть единственным основанием для важных решений.", [["Не является", "диагнозом, лечением или консультацией"], ["Не гарантирует", "события, доход, отношения или результат"], ["Полный документ", "site → legal/terms.html"]]],
   privacy: ["shield-check", "Конфиденциальность", "Минимум необходимых данных", "Для расчёта карты нужны дата, время и место рождения. Они относятся к персональным данным и должны храниться с согласия пользователя, удаляться по запросу и не передаваться AI в идентифицирующем виде.", [["AI получает", "обезличенный JSON карты"], ["Не отправляем", "Telegram ID, username и точный адрес"], ["Контроль", "экспорт и удаление данных пользователем"]]],
@@ -58,30 +59,27 @@ function goTo(id) {
 }
 
 function showDetail(key) {
+  if (key === "friend-chart") { openFriendChart(); return; }
   const item = details[key]; if (!item) return;
   const [icon, title, label, copy, rows] = item;
-  $("#sheet-content").innerHTML = `<div class="detail-hero"><i data-lucide="${icon}"></i></div><p class="eyebrow">${label}</p><h2>${title}</h2><p>${copy}</p><div class="detail-list">${rows.map(row => `<div><span>${row[0]}</span><strong>${row[1]}</strong></div>`).join("")}</div><button class="primary" data-sheet-done>Понятно</button>`;
-  openSheet(detailSheet);
+
+  // Доп. блоки строятся в одном innerHTML — без DOM-инъекций (исключает задвоение кнопок).
+  let extra = "";
   if (key === "edit-profile") {
-    const field = document.createElement("label");
-    field.className = "field";
-    field.innerHTML = `<span>Ваше имя</span>`;
-    const input = document.createElement("input");
-    input.type = "text"; input.maxLength = 60; input.value = localStorage.getItem("astro_name") || "";
-    field.appendChild(input);
-    const saveBtn = document.createElement("button");
-    saveBtn.className = "primary"; saveBtn.textContent = "Сохранить имя";
-    saveBtn.onclick = () => saveName(input.value);
-    const done = $("[data-sheet-done]");
-    done.insertAdjacentElement("beforebegin", field);
-    done.insertAdjacentElement("beforebegin", saveBtn);
+    extra = `<label class="field"><span>Ваше имя</span><input id="edit-name-input" type="text" maxlength="60" value="${escapeHtml(localStorage.getItem("astro_name") || "")}"></label><button class="primary" id="save-name-btn">Сохранить имя</button>`;
+  } else if (key === "subscription-management") {
+    extra = entitlement.isPlus
+      ? `<button class="secondary" id="cancel-sub-btn">Отключить автопродление</button>`
+      : `<button class="primary" id="sub-paywall-btn">Оформить Астро+</button>`;
   }
-  if (key === "subscription-management" && entitlement.isPlus && window.ASTRO_CONFIG?.cancelApiUrl) {
-    const cancelBtn = document.createElement("button");
-    cancelBtn.className = "secondary";
-    cancelBtn.textContent = "Отключить автопродление";
-    cancelBtn.onclick = () => cancelSubscription(cancelBtn);
-    $("[data-sheet-done]").insertAdjacentElement("beforebegin", cancelBtn);
+
+  $("#sheet-content").innerHTML = `<div class="detail-hero"><i data-lucide="${icon}"></i></div><p class="eyebrow">${label}</p><h2>${title}</h2><p>${copy}</p><div class="detail-list">${rows.map(row => `<div><span>${row[0]}</span><strong>${row[1]}</strong></div>`).join("")}</div>${extra}<button class="primary" data-sheet-done>Понятно</button>`;
+  openSheet(detailSheet);
+
+  if (key === "edit-profile") $("#save-name-btn").onclick = () => saveName($("#edit-name-input").value);
+  if (key === "subscription-management") {
+    const cancel = $("#cancel-sub-btn"); if (cancel) cancel.onclick = () => cancelSubscription(cancel);
+    const subP = $("#sub-paywall-btn"); if (subP) subP.onclick = () => { closeSheet(detailSheet); paywallTitle.textContent = "Откройте: Астро+"; openSheet(paywall); };
   }
   $("[data-sheet-done]").onclick = () => closeSheet(detailSheet);
 }
@@ -372,9 +370,18 @@ $(".subscribe").addEventListener("click", async () => {
   }
 });
 $$("[data-action]").forEach(button => button.addEventListener("click", () => {
-  const messages = { notifications: "Новых прогнозов пока нет", streak: "7 дней подряд — мягкий ритм уже сложился", daypart: "Периоды дня рассчитаны по вашим транзитам", share: "Карточка готова к отправке в Telegram", "save-answer": "Ответ сохранён в избранное" };
+  if (button.dataset.action === "share") { shareMyChart(); haptic(); return; }
+  const messages = { streak: "Ваш ритм складывается день за днём", daypart: "Периоды дня рассчитаны по вашей карте", "save-answer": "Ответ сохранён в избранное" };
   showToast(messages[button.dataset.action] || "Готово"); haptic();
 }));
+
+const refreshBtn = $("#refresh-btn");
+if (refreshBtn) refreshBtn.addEventListener("click", async () => {
+  refreshBtn.classList.add("spinning");
+  await loadDailyContent();
+  refreshBtn.classList.remove("spinning");
+  haptic(); showToast("Обновлено");
+});
 $$("[data-link]").forEach(button => button.addEventListener("click", () => {
   const url = new URL(button.dataset.link, window.location.href).href;
   tg?.openLink ? tg.openLink(url) : window.open(url, "_blank", "noopener");
@@ -421,9 +428,12 @@ function applyEntitlement() {
 
 // --- Имя пользователя ---
 function applyName(name) {
+  name = (name || "").trim();
+  const greeting = $("#profile-greeting");
+  if (greeting) greeting.innerHTML = name ? `${escapeHtml(name)},<br>это ваше небо` : "Это ваше<br>небо";
   if (!name) return;
   $$(".profile-card strong").forEach(el => el.textContent = name);
-  const initials = name.trim().split(/\s+/).map(w => w[0] || "").slice(0, 2).join("").toUpperCase();
+  const initials = name.split(/\s+/).map(w => w[0] || "").slice(0, 2).join("").toUpperCase();
   $$(".avatar").forEach(el => { if (!el.querySelector("img")) el.textContent = initials; });
 }
 
@@ -500,7 +510,79 @@ async function loadDailyContent() {
     });
     if (!r.ok) return;
     renderDaily(await r.json());
+    markDailyLoaded();
   } catch (_) {}
+}
+
+const SIGN_BLURB = {
+  "Овен": "решительность, прямота и желание действовать первым",
+  "Телец": "основательность, любовь к комфорту и устойчивость",
+  "Близнецы": "любопытство, лёгкость в общении и быстрый ум",
+  "Рак": "чуткость, привязанность к близким и хорошая интуиция",
+  "Лев": "тепло, щедрость и потребность быть замеченным",
+  "Дева": "внимание к деталям, практичность и желание улучшать",
+  "Весы": "стремление к балансу, эстетика и дипломатичность",
+  "Скорпион": "глубина чувств, проницательность и сила воли",
+  "Стрелец": "тяга к свободе, оптимизм и поиск смысла",
+  "Козерог": "целеустремлённость, ответственность и выдержка",
+  "Водолей": "оригинальность, независимость и взгляд в будущее",
+  "Рыбы": "мечтательность, эмпатия и тонкое восприятие",
+};
+
+function setTodayDate() {
+  const el = $("#today-date"); if (!el) return;
+  const s = new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
+  el.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function updateRefreshDot() {
+  const btn = $("#refresh-btn"); if (!btn) return;
+  const today = new Date().toISOString().slice(0, 10);
+  btn.classList.toggle("stale", localStorage.getItem("astro_daily_date") !== today);
+}
+function markDailyLoaded() {
+  localStorage.setItem("astro_daily_date", new Date().toISOString().slice(0, 10));
+  updateRefreshDot();
+}
+
+function shareToTelegram(text) {
+  const url = `https://t.me/share/url?url=${encodeURIComponent("https://t.me/")}&text=${encodeURIComponent(text)}`;
+  if (tg?.openTelegramLink) tg.openTelegramLink(url); else window.open(url, "_blank", "noopener");
+}
+function shareMyChart() {
+  const c = JSON.parse(localStorage.getItem("astro_chart_json") || "null");
+  const name = localStorage.getItem("astro_name") || "Моя";
+  const sign = c?.sun_sign ? ` · Солнце в ${c.sun_sign}` : "";
+  shareToTelegram(`✨ ${name} натальная карта${sign}. Составь свою в астро.`);
+}
+
+function openFriendChart() {
+  $("#sheet-content").innerHTML = `<div class="detail-hero"><i data-lucide="user-plus"></i></div>
+    <p class="eyebrow">Карта для друга</p><h2>Краткий разбор</h2>
+    <p>Введите данные друга — получите короткое описание, которым можно поделиться.</p>
+    <label class="field"><span>Имя друга</span><input id="fr-name" type="text" maxlength="40" placeholder="Имя"></label>
+    <label class="field"><span>Дата рождения</span><input id="fr-date" type="date"></label>
+    <label class="field"><span>Город рождения</span><input id="fr-place" type="text" maxlength="60" placeholder="Город (необязательно)"></label>
+    <button class="primary" id="fr-go">Составить</button>
+    <div id="fr-result"></div>`;
+  openSheet(detailSheet);
+  $("#fr-go").onclick = buildFriendChart;
+}
+function buildFriendChart() {
+  const name = ($("#fr-name").value || "").trim() || "Друг";
+  const date = $("#fr-date").value;
+  if (!date) { showToast("Укажите дату рождения друга"); return; }
+  const sign = sunSignFromDate(date) || "";
+  const blurb = SIGN_BLURB[sign] || "особый внутренний рисунок личности";
+  const text = `${name}: Солнце в ${sign}. В характере может проявляться ${blurb}. Это лишь часть карты — подробный разбор личности можно получить в астро.`;
+  $("#fr-result").innerHTML = `<article class="recognition-card" style="margin-top:16px">
+      <p class="eyebrow">${escapeHtml(name)} · ${escapeHtml(sign)}</p>
+      <p style="color:#bbb;font-size:11px;line-height:1.6">${escapeHtml(text)}</p>
+      <p class="reflection-question" style="margin-bottom:0"><b>Подробнее можно узнать в астро.</b></p>
+    </article>
+    <button class="primary" id="fr-share">Поделиться в Telegram</button>`;
+  $("#fr-share").onclick = () => shareToTelegram(text + "\n\nhttps://t.me/");
+  icons();
 }
 
 async function authenticate() {
@@ -586,6 +668,9 @@ function applySavedChart() {
   if (meta && c.birth.place) meta.innerHTML = c.birth.time_unknown
     ? `${c.birth.place} · ${formatted}<br>Время неизвестно · карта без домов`
     : `${c.birth.place} · ${formatted}${c.birth.time ? " · " + c.birth.time : ""}<br>Система домов: Плацидус`;
+  const city = (c.birth.place || "").split(",")[0];
+  const sub = $("#profile-sub"); if (sub) sub.textContent = city;
+  const bs = $("#birth-summary"); if (bs) bs.textContent = `${formatted}${city ? " · " + city : ""}`;
   // Если карта реальная (есть планеты) — рисуем её; иначе демо-схема.
   if (Array.isArray(c.planets)) renderRealChart(c); else renderNatalChart(!!c.birth.time_unknown);
   return true;
@@ -594,12 +679,14 @@ function applySavedChart() {
 if (tg) {
   tg.ready(); tg.expand(); tg.setHeaderColor("#ffffff"); tg.setBackgroundColor("#ffffff");
   const user = tg.initDataUnsafe?.user;
-  if (user?.first_name) $$(".profile-card strong").forEach(el => el.textContent = user.first_name);
+  if (user?.first_name && !localStorage.getItem("astro_name")) applyName(user.first_name);
   authenticate();
 }
 icons();
 renderNatalChart();
 const hasSavedChart = applySavedChart();
 applyName(localStorage.getItem("astro_name"));
+setTodayDate();
+updateRefreshDot();
 if (!hasSavedChart) setupOnboarding(); // онбординг только для новых пользователей
 setupBirthFlow();
