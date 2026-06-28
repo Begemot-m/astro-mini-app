@@ -74,7 +74,9 @@ function showDetail(key) {
       : `<button class="primary" id="sub-paywall-btn">Оформить Астро+</button>`;
   }
 
-  $("#sheet-content").innerHTML = `<div class="detail-hero"><i data-lucide="${icon}"></i></div><p class="eyebrow">${label}</p><h2>${title}</h2><p>${copy}</p><div class="detail-list">${rows.map(row => `<div><span>${row[0]}</span><strong>${row[1]}</strong></div>`).join("")}</div>${extra}<button class="primary" data-sheet-done>Понятно</button>`;
+  // "Понятно" показываем только когда нет своей действующей кнопки (иначе их две).
+  const doneBtn = extra ? "" : `<button class="primary" data-sheet-done>Понятно</button>`;
+  $("#sheet-content").innerHTML = `<div class="detail-hero"><i data-lucide="${icon}"></i></div><p class="eyebrow">${label}</p><h2>${title}</h2><p>${copy}</p><div class="detail-list">${rows.map(row => `<div><span>${row[0]}</span><strong>${row[1]}</strong></div>`).join("")}</div>${extra}${doneBtn}`;
   openSheet(detailSheet);
 
   if (key === "edit-profile") $("#save-name-btn").onclick = () => saveName($("#edit-name-input").value);
@@ -82,7 +84,7 @@ function showDetail(key) {
     const cancel = $("#cancel-sub-btn"); if (cancel) cancel.onclick = () => cancelSubscription(cancel);
     const subP = $("#sub-paywall-btn"); if (subP) subP.onclick = () => { closeSheet(detailSheet); paywallTitle.textContent = "Откройте: Астро+"; openSheet(paywall); };
   }
-  $("[data-sheet-done]").onclick = () => closeSheet(detailSheet);
+  const done = $("[data-sheet-done]"); if (done) done.onclick = () => closeSheet(detailSheet);
 }
 
 async function cancelSubscription(btn) {
