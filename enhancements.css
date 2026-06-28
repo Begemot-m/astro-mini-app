@@ -22,6 +22,17 @@ body.is-plus .inline-paywall{display:none}
 body.is-plus .week-card>button[data-paywall]{opacity:.4}
 .portrait-cta{margin-top:22px}
 body.is-plus .portrait-cta{display:none}
+
+/* Астрологические символы — монохромный текст, а не цветные эмодзи */
+.planet-symbol,.position-symbol,.zodiac-label,.chart-center-title{font-variant-emoji:text}
+
+/* Плавное затенение платной глубины (вместо кнопки в каждом разделе) */
+.locked-teaser{position:relative;margin-top:10px;padding-bottom:14px}
+.locked-teaser .locked-body{opacity:.5;filter:blur(2.5px);max-height:56px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 8%,transparent);mask-image:linear-gradient(#000 8%,transparent);transition:.45s ease}
+.locked-teaser .locked-cta{display:none}
+.locked-teaser::after{content:"Подробнее — в Астро+";position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:8px;letter-spacing:.4px;color:var(--accent);font-weight:600;pointer-events:none}
+body.is-plus .locked-teaser .locked-body{opacity:1;filter:none;max-height:none;-webkit-mask-image:none;mask-image:none}
+body.is-plus .locked-teaser::after{display:none}
 /* Тизер: первый абзац виден, продолжение мягко размыто + CTA поверх */
 .locked-teaser{position:relative;margin-top:8px}
 .locked-teaser .locked-body{filter:blur(4px);opacity:.5;user-select:none;max-height:62px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 30%,transparent);mask-image:linear-gradient(#000 30%,transparent)}

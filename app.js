@@ -200,7 +200,7 @@ function renderRealChart(chart) {
   planets.forEach(pl => {
     const p = pol(119, pl.lon);
     add("circle", { cx:p.x, cy:p.y, r:9, class:`planet-node${pl.key === "sun" ? " accent" : ""}` });
-    add("text", { x:p.x, y:p.y + .5, class:"planet-symbol" }, PLANET_GLYPH[pl.key] || "•");
+    add("text", { x:p.x, y:p.y + .5, class:"planet-symbol" }, (PLANET_GLYPH[pl.key] || "•") + "︎");
     const d = pol(133, pl.lon); add("text", { x:d.x, y:d.y, class:"planet-degree" }, `${Math.round(pl.degree)}°`);
   });
   add("circle", { cx:180, cy:180, r:38, class:"chart-center" });
@@ -794,24 +794,124 @@ async function saveChartToBackend(chartJson) {
 
 // Реальный расчёт Swiss Ephemeris через Edge Function chart-calc.
 // Тихий fallback: если сервис не подключён или ошибка — остаётся базовая карта.
+// Рассчитывает карту на клиенте (astronomy-engine) и обновляет интерфейс.
 async function computeChart(birth) {
-  const endpoint = window.ASTRO_CONFIG?.chartCalcApiUrl;
-  const token = localStorage.getItem("astro_access_token");
-  if (!endpoint || !token || !birth?.date) return;
+  const real = await computeChartClient(birth);
+  if (!real) return;
+  localStorage.setItem("astro_chart_json", JSON.stringify(real));
+  saveChartToBackend(real);
+  renderRealChart(real);
+  updatePositionsReal(real);
+}
+
+// Смещение часового пояса (минуты) для даты — по текущим правилам IANA-зоны.
+function tzOffsetMinutes(date, timeZone) {
   try {
-    const r = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify(birth),
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone, hour12: false, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
     });
-    if (!r.ok) return;
-    const realChart = await r.json();
-    if (!realChart || !Array.isArray(realChart.planets)) return;
-    localStorage.setItem("astro_chart_json", JSON.stringify(realChart));
-    saveChartToBackend(realChart); // в realChart есть поле birth
-    renderRealChart(realChart);    // перерисовать круг под реальный расчёт
-    showToast("Карта рассчитана по Swiss Ephemeris ✨");
-  } catch (_) {}
+    const p = dtf.formatToParts(date).reduce((a, x) => { a[x.type] = x.value; return a; }, {});
+    const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second);
+    return (asUTC - date.getTime()) / 60000;
+  } catch (_) { return 0; }
+}
+
+// Полный расчёт планет (и асцендента, если есть координаты и время) на клиенте.
+async function computeChartClient(birth) {
+  const A = window.Astronomy;
+  if (!A || !birth || !birth.date) return null;
+
+  // 1. Геокодирование города → координаты и часовой пояс (бесплатно, без ключа).
+  let lat = null, lon = null, tz = null;
+  const city = (birth.place || "").split(",")[0].trim();
+  if (city) {
+    try {
+      const g = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=ru`);
+      const gj = await g.json();
+      const r0 = gj.results && gj.results[0];
+      if (r0) { lat = r0.latitude; lon = r0.longitude; tz = r0.timezone; }
+    } catch (_) {}
+  }
+
+  // 2. Местное время рождения → UTC.
+  const [y, mo, d] = birth.date.split("-").map(Number);
+  let hh = 12, mm = 0;
+  if (!birth.time_unknown && birth.time) { const t = birth.time.split(":"); hh = +t[0] || 0; mm = +t[1] || 0; }
+  const guess = new Date(Date.UTC(y, mo - 1, d, hh, mm));
+  const utc = tz ? new Date(guess.getTime() - tzOffsetMinutes(guess, tz) * 60000) : guess;
+
+  // 3. Геоцентрическая эклиптическая долгота каждой планеты.
+  const bodies = [
+    ["sun", "Солнце", A.Body.Sun], ["moon", "Луна", A.Body.Moon], ["mercury", "Меркурий", A.Body.Mercury],
+    ["venus", "Венера", A.Body.Venus], ["mars", "Марс", A.Body.Mars], ["jupiter", "Юпитер", A.Body.Jupiter],
+    ["saturn", "Сатурн", A.Body.Saturn], ["uranus", "Уран", A.Body.Uranus], ["neptune", "Нептун", A.Body.Neptune],
+    ["pluto", "Плутон", A.Body.Pluto],
+  ];
+  const eclLon = (body, date) => { try { return A.Ecliptic(A.GeoVector(body, date, true)).elon; } catch (_) { return null; } };
+  const planets = [];
+  for (const [key, name, body] of bodies) {
+    const L = eclLon(body, utc); if (L == null) continue;
+    const L2 = eclLon(body, new Date(utc.getTime() + 86400000));
+    let diff = (L2 != null) ? L2 - L : 0; if (diff > 180) diff -= 360; if (diff < -180) diff += 360;
+    const norm = ((L % 360) + 360) % 360;
+    planets.push({
+      key, name, sign: ZODIAC_SIGNS[Math.floor(norm / 30)],
+      degree: +(norm % 30).toFixed(1), lon: +norm.toFixed(2),
+      retrograde: diff < 0, house: null,
+    });
+  }
+  if (!planets.length) return null;
+
+  // 4. Асцендент (нужны координаты и известное время).
+  let ascendant = null;
+  if (lat != null && lon != null && !birth.time_unknown) {
+    try {
+      const gst = A.SiderealTime(utc);              // часы
+      const ramc = ((gst * 15 + lon) % 360) * Math.PI / 180;
+      const eps = 23.4392911 * Math.PI / 180;
+      const latR = lat * Math.PI / 180;
+      let asc = Math.atan2(Math.cos(ramc), -(Math.sin(eps) * Math.tan(latR) + Math.cos(eps) * Math.sin(ramc)));
+      asc = (asc * 180 / Math.PI + 360) % 360;
+      ascendant = { sign: ZODIAC_SIGNS[Math.floor(asc / 30)], degree: +(asc % 30).toFixed(1), lon: +asc.toFixed(2) };
+    } catch (_) {}
+  }
+
+  return {
+    engine: "astronomy-engine-client", planets, ascendant, house_cusps: null,
+    sun_sign: planets[0].sign,
+    birth: { ...birth, lat, lon, timezone: tz },
+  };
+}
+
+// Заполняет список позиций и big-three реальными планетами.
+function updatePositionsReal(chart) {
+  const byKey = {}; (chart.planets || []).forEach(p => byKey[p.key] = p);
+  const list = $(".positions-list");
+  if (list) {
+    ["sun", "moon", "mercury", "venus", "mars"].forEach(key => {
+      const b = list.querySelector(`[data-detail="${key}"]`); if (!b) return;
+      const p = byKey[key];
+      if (!p) { b.style.display = "none"; return; }
+      b.style.display = "";
+      const small = b.querySelector("small"); if (small) small.textContent = `${p.sign} · ${p.degree}°`;
+      const em = b.querySelector("em"); if (em) em.textContent = p.retrograde ? "ретро" : "";
+    });
+  }
+  const bt = $(".big-three");
+  if (bt) {
+    const setBT = (sel, sign, deg) => {
+      const b = bt.querySelector(`[data-detail="${sel}"]`); if (!b) return;
+      if (!sign) { b.style.display = "none"; return; }
+      b.style.display = "";
+      const st = b.querySelector("strong"); if (st) st.textContent = sign;
+      const sm = b.querySelector("small"); if (sm) sm.textContent = deg;
+    };
+    setBT("sun", byKey.sun && byKey.sun.sign, byKey.sun ? `${byKey.sun.degree}°` : "");
+    setBT("moon", byKey.moon && byKey.moon.sign, byKey.moon ? `${byKey.moon.degree}°` : "");
+    setBT("asc", chart.ascendant && chart.ascendant.sign, chart.ascendant ? `${chart.ascendant.degree}°` : "");
+  }
+  const note = $("#positions-note"); if (note) note.textContent = "по вашей карте";
 }
 
 // Восстанавливает интерфейс по сохранённой карте: убирает онбординг, заполняет мету.
@@ -835,7 +935,7 @@ function renderBasicChart(c) {
   const ang = idx * 30 + 15;
   const p = pol(119, ang);
   add("circle", { cx: p.x, cy: p.y, r: 11, class: "planet-node accent" });
-  add("text", { x: p.x, y: p.y + .5, class: "planet-symbol" }, "☉");
+  add("text", { x: p.x, y: p.y + .5, class: "planet-symbol" }, "☉︎");
   add("circle", { cx: 180, cy: 180, r: 38, class: "chart-center" });
   add("text", { x: 180, y: 177, class: "chart-center-title" }, String((c.birth && c.birth.place) || "").split(",")[0].slice(0, 14));
   add("text", { x: 180, y: 188, class: "chart-center-sub" }, "ядро карты");
@@ -873,9 +973,9 @@ function applySavedChart() {
   const city = (c.birth.place || "").split(",")[0];
   const sub = $("#profile-sub"); if (sub) sub.textContent = city;
   const bs = $("#birth-summary"); if (bs) bs.textContent = `${formatted}${city ? " · " + city : ""}`;
-  // Реальная карта (chart-service) → полный круг; иначе честный круг с Солнцем.
-  if (Array.isArray(c.planets)) renderRealChart(c);
-  else if (c.sun_sign) { renderBasicChart(c); updatePositionsBasic(c.sun_sign); }
+  // Полная карта (есть планеты) → круг + позиции; иначе базовый круг и догоняем расчётом.
+  if (Array.isArray(c.planets)) { renderRealChart(c); updatePositionsReal(c); }
+  else if (c.sun_sign) { renderBasicChart(c); updatePositionsBasic(c.sun_sign); computeChart(c.birth); }
   else renderNatalChart(!!c.birth.time_unknown);
   return true;
 }
