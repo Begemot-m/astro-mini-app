@@ -32,7 +32,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "=== 3/3  supabase functions deploy ===" -ForegroundColor Cyan
 $all = @(
-    "auth-telegram","interpret","save-chart","daily-content",
+    "auth-telegram","interpret","save-chart","daily-content","portrait",
     "chart-calc","create-payment","cancel-subscription",
     "yookassa-webhook","renew-subscriptions"
 )

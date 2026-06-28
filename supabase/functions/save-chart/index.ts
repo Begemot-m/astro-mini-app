@@ -72,8 +72,9 @@ Deno.serve(handler(async (req) => {
     });
     if (chartErr) { console.error("save charts failed:", chartErr); throw new HttpError(500, "Save failed"); }
 
-    // Смена данных рождения инвалидирует дневной кэш — пересчитается заново.
+    // Смена данных рождения инвалидирует кэш дневного контента и портрета.
     await admin.from("daily_content").delete().eq("user_id", user.id);
+    await admin.from("interpretations").delete().eq("user_id", user.id).eq("kind", "portrait");
   }
 
   return json(req, { ok: true });

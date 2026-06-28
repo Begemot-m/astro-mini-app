@@ -7,6 +7,8 @@ window.ASTRO_CONFIG = {
   saveChartApiUrl: "https://abdlkghlchczwenobvkx.supabase.co/functions/v1/save-chart",
   // URL функции daily-content: ежедневный контент главной (прогноз, сферы, неделя/месяц).
   dailyContentApiUrl: "https://abdlkghlchczwenobvkx.supabase.co/functions/v1/daily-content",
+  // URL функции portrait: глубокий портрет по карте (кэшируется).
+  portraitApiUrl: "https://abdlkghlchczwenobvkx.supabase.co/functions/v1/portrait",
   // URL функции chart-calc: реальный расчёт Swiss Ephemeris (иначе — базовая карта).
   chartCalcApiUrl: "",
   // URL функции create-payment для реального checkout ЮKassa.

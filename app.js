@@ -515,6 +515,55 @@ async function loadDailyContent() {
   } catch (_) {}
 }
 
+// Глубокий портрет: рендер разделов с тизером (free) и платной глубиной.
+function renderPortrait(d) {
+  if (!d || !Array.isArray(d.sections) || !d.sections.length) return;
+  const acc = $("#portrait-accordion"); if (!acc) return;
+  acc.innerHTML = d.sections.map(s => {
+    const heading = escapeHtml(s.heading || "");
+    const teaser = escapeHtml(s.teaser || "");
+    const full = escapeHtml(s.full || "");
+    const fullBlock = d.is_plus
+      ? `<p>${full}</p>`
+      : `<div class="locked-teaser"><div class="locked-body"><p>${full}</p></div><div class="locked-cta"><button class="inline-paywall" data-paywall="${heading}">Подробнее в Астро+</button></div></div>`;
+    return `<button class="accordion-head open">${heading} <span>−</span></button><div class="accordion-body open"><p>${teaser}</p>${fullBlock}</div>`;
+  }).join("");
+  $$(".accordion-head", acc).forEach(head => head.addEventListener("click", () => {
+    const body = head.nextElementSibling; const open = body.classList.toggle("open");
+    head.classList.toggle("open", open); const sp = $("span", head); if (sp) sp.textContent = open ? "−" : "+"; haptic("soft");
+  }));
+  $$("[data-paywall]", acc).forEach(b => b.addEventListener("click", () => {
+    if (entitlement.isPlus) { showToast("Уже открыто в Астро+"); return; }
+    paywallTitle.textContent = `Откройте: ${b.dataset.paywall}`; openSheet(paywall);
+  }));
+  if (d.summary) {
+    const rc = $(".recognition-card");
+    if (rc) {
+      const p = rc.querySelector("p:not(.eyebrow):not(.reflection-question)");
+      if (p) p.textContent = d.summary;
+      if (d.title) { const h = $("h3", rc); if (h) h.innerHTML = escapeHtml(d.title); }
+    }
+  }
+  const st = $("#portrait-status"); if (st) st.textContent = d.is_plus ? "полная версия" : "по вашей карте";
+  icons();
+}
+
+async function loadPortrait() {
+  const endpoint = window.ASTRO_CONFIG?.portraitApiUrl;
+  const token = localStorage.getItem("astro_access_token");
+  if (!endpoint || !token) return;
+  try {
+    const chart = JSON.parse(localStorage.getItem("astro_chart_json") || "null");
+    const r = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ chart }),
+    });
+    if (!r.ok) return;
+    renderPortrait(await r.json());
+  } catch (_) {}
+}
+
 const SIGN_BLURB = {
   "Овен": "решительность, прямота и желание действовать первым",
   "Телец": "основательность, любовь к комфорту и устойчивость",
@@ -637,6 +686,7 @@ async function saveBirthEdit() {
   applySavedChart();
   computeChart(birth);
   loadDailyContent();
+  loadPortrait();
   closeSheet(detailSheet);
   showToast("Данные обновлены — карта пересчитывается");
 }
@@ -729,6 +779,7 @@ async function authenticate() {
     if (data.display_name && !localStorage.getItem("astro_name")) localStorage.setItem("astro_name", data.display_name);
     applyName(localStorage.getItem("astro_name") || data.display_name);
     loadDailyContent();
+    loadPortrait();
   } catch (_) {
     showToast("Не удалось авторизоваться — показаны демо-данные");
   }
