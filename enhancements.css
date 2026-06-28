@@ -34,3 +34,28 @@ body.is-plus .locked-teaser .locked-cta{display:none}
 .refresh-btn.stale::after{content:"";position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .refresh-btn.spinning svg{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* Сила пламени стрика растёт с днями */
+.streak svg{transition:color .3s, transform .3s, filter .3s}
+.streak[data-flame="0"] svg{color:#bbb}
+.streak[data-flame="1"] svg{color:#ffb347}
+.streak[data-flame="2"] svg{color:#ff8c2b}
+.streak[data-flame="3"] svg{color:#ff5e2b;transform:scale(1.12)}
+.streak[data-flame="4"] svg{color:#ff2f2b;transform:scale(1.22);filter:drop-shadow(0 0 4px rgba(255,70,0,.6))}
+
+/* Анимации — оживление интерфейса */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.screen.active>*{animation:fadeUp .4s ease both}
+.screen.active>*:nth-child(2){animation-delay:.04s}
+.screen.active>*:nth-child(3){animation-delay:.08s}
+.screen.active>*:nth-child(4){animation-delay:.12s}
+.screen.active>*:nth-child(5){animation-delay:.16s}
+.screen.active>*:nth-child(6){animation-delay:.2s}
+button{transition:transform .12s ease}
+button:active{transform:scale(.97)}
+.sphere-card,.energy-card,.forecast-card,.history-card,.recognition-card{transition:transform .15s ease}
+.sphere-card:active,.energy-card:active,.history-card:active{transform:scale(.98)}
+.moon-orbit .moon{animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.answer-card.show{animation:fadeUp .4s ease both}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

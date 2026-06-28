@@ -13,6 +13,8 @@ window.ASTRO_CONFIG = {
   paymentApiUrl: "",
   // URL функции cancel-subscription: отключение автопродления.
   cancelApiUrl: "",
+  // Username бота БЕЗ @ (например "my_astro_bot") — для корректных ссылок при шеринге.
+  botUsername: "",
   // "demo" — статичные заглушки; "live" — реальный backend.
   environment: "live"
 };

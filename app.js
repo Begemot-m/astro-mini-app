@@ -24,14 +24,14 @@ const details = {
   referral: ["users", "Пригласить друзей", "Дарите астро+", "За каждого друга, который оформит подписку, вы получите 7 дополнительных дней астро+. Ещё два приглашения откроют месяц бесплатно.", [["Приглашено", "1 из 3"], ["Ваша награда", "7 дней астро+"], ["Ссылка", "t.me/astro_demo_bot?start=ref_maria"]]],
   about: ["info", "Об астро.", "Магия в современной упаковке", "астро. — развлекательно-рефлексивный продукт. Интерпретации помогают посмотреть на привычные ситуации с нового ракурса, но не заменяют профессиональные медицинские, юридические или финансовые рекомендации.", [["Расчёт карты", "Swiss Ephemeris"], ["Интерпретация", "AI через backend"]]],
   legal: ["shield-check", "Условия и конфиденциальность", "Правила и данные", "Сервис носит развлекательно-рефлексивный характер: материалы вероятностны, не являются диагнозом и не гарантируют событий. Для карты нужны дата, время и место рождения — они хранятся с вашего согласия, удаляются по запросу и не передаются AI в идентифицирующем виде.", [["Не является", "диагнозом или консультацией"], ["AI получает", "обезличенную структуру карты"], ["Контроль", "экспорт и удаление данных"], ["Полные документы", "site → legal/"]]],
-  "edit-profile": ["user-round", "Профиль", "Данные Telegram", "В реальном Mini App имя и аватар загружаются из Telegram. Здесь показан демонстрационный пользователь.", [["Имя", "Мария К."], ["Username", "@maria_k"], ["Город", "Москва"]]],
+  "edit-profile": ["user-round", "Профиль", "Ваше имя", "Имя подтягивается из Telegram. Здесь можно задать или изменить его — оно будет использоваться в приложении.", []],
   terms: ["file-text", "Условия использования", "Безопасная рамка", "астро. предоставляет персонализированные развлекательно-рефлексивные материалы. Интерпретации носят вероятностный характер, могут не совпадать с вашим опытом и не должны быть единственным основанием для важных решений.", [["Не является", "диагнозом, лечением или консультацией"], ["Не гарантирует", "события, доход, отношения или результат"], ["Полный документ", "site → legal/terms.html"]]],
   privacy: ["shield-check", "Конфиденциальность", "Минимум необходимых данных", "Для расчёта карты нужны дата, время и место рождения. Они относятся к персональным данным и должны храниться с согласия пользователя, удаляться по запросу и не передаваться AI в идентифицирующем виде.", [["AI получает", "обезличенный JSON карты"], ["Не отправляем", "Telegram ID, username и точный адрес"], ["Контроль", "экспорт и удаление данных пользователем"]]],
   "ai-policy": ["bot", "Как используется AI", "AI только интерпретирует", "Нейросеть получает уже рассчитанную структуру карты и пишет понятный текст по строгой методологии. Она не рассчитывает положения планет, не ставит диагнозы и не выдаёт финансовых, медицинских или юридических рекомендаций.", [["Расчёт", "Swiss Ephemeris"], ["Тестовый провайдер", "GigaChat API через защищённый backend"], ["Production-переключение", "Claude или другой AI без изменений frontend"]]]
   ,mercury: ["message-circle", "Меркурий в Близнецах", "Мышление и речь", "Символически это положение связано с быстрым мышлением, любопытством и способностью переключаться между разными точками зрения. Проверяйте описание по своему опыту.", [["Положение", "Близнецы · 15°42′"], ["Может помогать", "объяснять сложное простыми словами"], ["Зона внимания", "информационная перегрузка"]]]
   ,venus: ["heart", "Венера в Близнецах", "Вкус и отношения", "В отношениях вам может быть особенно важен живой обмен мыслями, лёгкость и ощущение, что рядом можно оставаться любопытной.", [["Положение", "Близнецы · 29°11′"], ["Ценность", "интерес и диалог"], ["Проверить по опыту", "насколько вам важна свобода общения"]]]
   ,offer: ["file-check-2", "Условия подписки", "ЮKassa · внешний checkout", "Подписка оформляется на самостоятельном веб-сервисе. Перед оплатой пользователь видит цену, периодичность, условия автопродления, возврата и отключения. Доступ открывается только после подтверждённого webhook ЮKassa.", [["Цена", "299 ₽ каждые 30 дней"], ["Отмена", "самостоятельно в профиле"], ["Оплата", "защищённая страница ЮKassa"]]]
-  ,"subscription-management": ["credit-card", "Управление подпиской", "Контроль списаний", "В production здесь отображаются актуальный статус, дата следующего списания, история чеков и кнопка отключения автопродления. Отключение не удаляет уже оплаченный доступ.", [["Статус демо", "подписка не оформлена"], ["Автопродление", "выключается одним действием"], ["Возврат", "по правилам публичной оферты"]]]
+  ,"subscription-management": ["credit-card", "Управление подпиской", "Контроль списаний", "Здесь — статус подписки и автопродление. Отключение автопродления не удаляет уже оплаченный доступ: он сохраняется до конца оплаченного периода.", [["Тариф", "Астро+ · 299 ₽ / 30 дней"], ["Оплата", "защищённая страница ЮKassa"], ["Возврат", "по правилам публичной оферты"]]]
 };
 
 function icons() {
@@ -60,6 +60,7 @@ function goTo(id) {
 
 function showDetail(key) {
   if (key === "friend-chart") { openFriendChart(); return; }
+  if (key === "birth") { openBirthEdit(); return; }
   const item = details[key]; if (!item) return;
   const [icon, title, label, copy, rows] = item;
 
@@ -528,11 +529,116 @@ const SIGN_BLURB = {
   "Водолей": "оригинальность, независимость и взгляд в будущее",
   "Рыбы": "мечтательность, эмпатия и тонкое восприятие",
 };
+const SIGN_STRENGTH = {
+  "Овен": "смелость начинать и вести за собой", "Телец": "терпение и умение доводить до результата",
+  "Близнецы": "находить общий язык и быстро учиться", "Рак": "заботиться и создавать тёплую атмосферу",
+  "Лев": "вдохновлять и быть в центре событий", "Дева": "наводить порядок и видеть детали",
+  "Весы": "сглаживать конфликты и держать вкус", "Скорпион": "идти до конца и читать людей",
+  "Стрелец": "видеть большую картину и заражать оптимизмом", "Козерог": "строить вдолгую и держать слово",
+  "Водолей": "мыслить нестандартно и объединять людей", "Рыбы": "сопереживать и творчески чувствовать",
+};
+const SIGN_GROWTH = {
+  "Овен": "учиться терпению и слушать других", "Телец": "не бояться перемен", "Близнецы": "доводить начатое до конца",
+  "Рак": "не закрываться в обидах", "Лев": "делиться вниманием", "Дева": "быть мягче к себе",
+  "Весы": "принимать решения без долгих сомнений", "Скорпион": "отпускать контроль", "Стрелец": "доводить идеи до дела",
+  "Козерог": "позволять себе отдых", "Водолей": "быть ближе эмоционально", "Рыбы": "опираться на факты",
+};
 
 function setTodayDate() {
   const el = $("#today-date"); if (!el) return;
   const s = new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
   el.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function pluralDays(n) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return "день";
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return "дня";
+  return "дней";
+}
+// Реальный счётчик дней подряд + интенсивность пламени.
+function computeStreak() {
+  const btn = $(".streak"); if (!btn) return;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const last = localStorage.getItem("astro_streak_date");
+  let streak = parseInt(localStorage.getItem("astro_streak") || "0", 10) || 0;
+  if (last !== todayStr) {
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    streak = (last === y.toISOString().slice(0, 10)) ? streak + 1 : 1;
+    localStorage.setItem("astro_streak", String(streak));
+    localStorage.setItem("astro_streak_date", todayStr);
+  }
+  if (streak < 1) streak = 1;
+  btn.innerHTML = `<i data-lucide="flame"></i> ${streak} ${pluralDays(streak)} подряд`;
+  btn.dataset.flame = String(streak >= 30 ? 4 : streak >= 14 ? 3 : streak >= 7 ? 2 : streak >= 3 ? 1 : 0);
+  icons();
+}
+
+// Раскрывает все разделы портрета и добавляет платный CTA там, где его нет.
+function enhancePortrait() {
+  $$("#chart .accordion-head").forEach(head => {
+    const body = head.nextElementSibling;
+    if (!body || !body.classList.contains("accordion-body")) return;
+    body.classList.add("open"); head.classList.add("open");
+    const span = $("span", head); if (span) span.textContent = "−";
+    if (!body.querySelector(".inline-paywall") && !body.querySelector(".locked-teaser")) {
+      const cta = document.createElement("button");
+      cta.className = "inline-paywall";
+      cta.textContent = "Подробнее в Астро+";
+      cta.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (entitlement.isPlus) { showToast("Уже открыто в Астро+"); return; }
+        paywallTitle.textContent = "Откройте: подробный разбор"; openSheet(paywall);
+      });
+      body.appendChild(cta);
+    }
+  });
+}
+
+// Редактирование данных рождения (лимит раз в неделю — на backend).
+function openBirthEdit() {
+  const c = JSON.parse(localStorage.getItem("astro_chart_json") || "null") || {};
+  const b = c.birth || {};
+  $("#sheet-content").innerHTML = `<div class="detail-hero"><i data-lucide="calendar-days"></i></div>
+    <p class="eyebrow">Данные рождения</p><h2>Изменить</h2>
+    <p>Менять данные можно <b>раз в неделю</b> — после изменения карта и прогнозы пересчитаются.</p>
+    <label class="field"><span>Дата рождения</span><input id="be-date" type="date" value="${b.date || ""}"></label>
+    <label class="field"><span>Время рождения</span><input id="be-time" type="time" value="${b.time || ""}"></label>
+    <label class="unknown-time"><input id="be-unknown" type="checkbox" ${b.time_unknown ? "checked" : ""}><span><b>Время неизвестно</b>Построим карту без домов</span></label>
+    <label class="field"><span>Город рождения</span><input id="be-place" type="text" maxlength="60" value="${escapeHtml(b.place || "")}"></label>
+    <button class="primary" id="be-save">Сохранить и пересчитать</button>`;
+  openSheet(detailSheet);
+  $("#be-save").onclick = saveBirthEdit;
+}
+async function saveBirthEdit() {
+  const date = $("#be-date").value;
+  if (!date) { showToast("Укажите дату рождения"); return; }
+  const unknown = $("#be-unknown").checked;
+  const birth = { date, time: unknown ? null : $("#be-time").value, time_unknown: unknown, place: $("#be-place").value.trim() };
+  const chartJson = { birth, sun_sign: sunSignFromDate(date), houses_system: unknown ? null : "Placidus", note: "обновлено пользователем" };
+  const btn = $("#be-save"); btn.disabled = true; btn.textContent = "Сохраняем…";
+  const endpoint = window.ASTRO_CONFIG?.saveChartApiUrl;
+  const token = localStorage.getItem("astro_access_token");
+  if (endpoint && token) {
+    try {
+      const r = await fetch(endpoint, {
+        method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ birth, chart: chartJson }),
+      });
+      if (r.status === 429) {
+        const p = await r.json().catch(() => ({}));
+        showToast(p.message || "Данные рождения можно менять раз в неделю");
+        btn.disabled = false; btn.textContent = "Сохранить и пересчитать"; return;
+      }
+    } catch (_) {}
+  }
+  localStorage.setItem("astro_chart_json", JSON.stringify(chartJson));
+  localStorage.removeItem("astro_daily_date");
+  applySavedChart();
+  computeChart(birth);
+  loadDailyContent();
+  closeSheet(detailSheet);
+  showToast("Данные обновлены — карта пересчитывается");
 }
 
 function updateRefreshDot() {
@@ -545,15 +651,19 @@ function markDailyLoaded() {
   updateRefreshDot();
 }
 
-function shareToTelegram(text) {
-  const url = `https://t.me/share/url?url=${encodeURIComponent("https://t.me/")}&text=${encodeURIComponent(text)}`;
+function appLink() {
+  const u = window.ASTRO_CONFIG?.botUsername;
+  return u ? `https://t.me/${u}` : "https://begemot-m.github.io/astro-mini-app/";
+}
+function shareToTelegram(text, link) {
+  const url = `https://t.me/share/url?url=${encodeURIComponent(link || appLink())}&text=${encodeURIComponent(text)}`;
   if (tg?.openTelegramLink) tg.openTelegramLink(url); else window.open(url, "_blank", "noopener");
 }
 function shareMyChart() {
   const c = JSON.parse(localStorage.getItem("astro_chart_json") || "null");
   const name = localStorage.getItem("astro_name") || "Моя";
   const sign = c?.sun_sign ? ` · Солнце в ${c.sun_sign}` : "";
-  shareToTelegram(`✨ ${name} натальная карта${sign}. Составь свою в астро.`);
+  shareToTelegram(`✨ ${name} натальная карта${sign}. Узнай свою личность через астрологию в астро.`);
 }
 
 function openFriendChart() {
@@ -574,14 +684,23 @@ function buildFriendChart() {
   if (!date) { showToast("Укажите дату рождения друга"); return; }
   const sign = sunSignFromDate(date) || "";
   const blurb = SIGN_BLURB[sign] || "особый внутренний рисунок личности";
-  const text = `${name}: Солнце в ${sign}. В характере может проявляться ${blurb}. Это лишь часть карты — подробный разбор личности можно получить в астро.`;
+  const strength = SIGN_STRENGTH[sign] || "свои сильные стороны";
+  const growth = SIGN_GROWTH[sign] || "точки роста";
+
+  // Текст для экрана (по разделам) и текст для пересылки (с приглашением).
+  const sections = [
+    ["Характер", `Солнце в ${sign} — ядро личности. Может проявляться ${blurb}.`],
+    ["Сильная сторона", `${strength.charAt(0).toUpperCase() + strength.slice(1)}.`],
+    ["Зона роста", `${growth.charAt(0).toUpperCase() + growth.slice(1)}.`],
+  ];
   $("#fr-result").innerHTML = `<article class="recognition-card" style="margin-top:16px">
-      <p class="eyebrow">${escapeHtml(name)} · ${escapeHtml(sign)}</p>
-      <p style="color:#bbb;font-size:11px;line-height:1.6">${escapeHtml(text)}</p>
-      <p class="reflection-question" style="margin-bottom:0"><b>Подробнее можно узнать в астро.</b></p>
+      <p class="eyebrow">${escapeHtml(name)} · Солнце в ${escapeHtml(sign)}</p>
+      ${sections.map(s => `<p style="color:#ddd;font-size:11px;line-height:1.6;margin:8px 0"><b style="color:#a852ff;display:block;font-size:9px;text-transform:uppercase;letter-spacing:.5px">${escapeHtml(s[0])}</b>${escapeHtml(s[1])}</p>`).join("")}
+      <p class="reflection-question" style="margin-bottom:0"><b>Полная карта — Луна, отношения и предназначение — раскрывается в астро.</b></p>
     </article>
     <button class="primary" id="fr-share">Поделиться в Telegram</button>`;
-  $("#fr-share").onclick = () => shareToTelegram(text + "\n\nhttps://t.me/");
+  const shareText = `✨ ${name} — краткий астропортрет\n\nСолнце в ${sign}: ${blurb}.\nСильная сторона: ${strength}.\nЗона роста: ${growth}.\n\nЭто только ядро личности. Полная карта — в приложении астро:`;
+  $("#fr-share").onclick = () => shareToTelegram(shareText);
   icons();
 }
 
@@ -688,5 +807,9 @@ const hasSavedChart = applySavedChart();
 applyName(localStorage.getItem("astro_name"));
 setTodayDate();
 updateRefreshDot();
+computeStreak();
+enhancePortrait();
+// Микровибрация на каждый тап по кнопке (restore haptics).
+document.addEventListener("click", (e) => { if (e.target.closest("button")) haptic("light"); });
 if (!hasSavedChart) setupOnboarding(); // онбординг только для новых пользователей
 setupBirthFlow();
